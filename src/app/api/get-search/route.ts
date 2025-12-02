@@ -6,7 +6,7 @@ export async function POST(request: Request) {
   const searchRequest = await fetch(
     `https://api.search.brave.com/res/v1/web/search?q=${encodeURIComponent(
       searchQuery
-    )}`,
+    )}&result_filter=web&count=10`,
     {
       method: "GET",
       headers: {
@@ -17,7 +17,7 @@ export async function POST(request: Request) {
     }
   );
   const searchResponse = await searchRequest.json();
-  console.log({ searchResponse });
+  console.log({searchResponse});
 
   return NextResponse.json({ searchResponse });
 }
