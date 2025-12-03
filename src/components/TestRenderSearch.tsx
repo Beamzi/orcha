@@ -1,4 +1,5 @@
 "use client";
+import { LuCircleArrowUp, LuX } from "react-icons/lu";
 
 import { useEffect, useState } from "react";
 
@@ -7,6 +8,7 @@ interface resultProps {
   url: string;
 }
 const keywords = [
+  // Temporal (keep these - they're unambiguous enough)
   "latest",
   "current",
   "now",
@@ -14,27 +16,75 @@ const keywords = [
   "recent",
   "2024",
   "2025",
+  "this week",
+  "this month",
+
+  // News/updates
   "news",
   "update",
+  "updates",
   "live",
   "release",
+  "released",
+  "announced",
+  "announcement",
+
+  // Pricing/shopping
   "price",
   "cost",
+  "how much",
+  "buy",
+  "purchase",
+  "review",
+  "reviews",
+
+  // Comparisons
+  "vs",
+  "versus",
+  "compare",
+  "better",
+  "best",
+
+  // Weather
   "weather",
   "forecast",
+  "temperature",
+
+  // Identity/factual questions
   "who is",
   "what is",
   "when is",
   "where is",
+  "how many",
+
+  // Location/services
   "opening hours",
   "directions",
+  "near me",
+  "closest",
+  "open now",
+
+  // Finance
   "market",
   "stock",
   "crypto",
+  "exchange rate",
+
+  // Tech/downloads
   "download",
   "official site",
   "documentation",
   "api docs",
+
+  // Sports/events
+  "score",
+  "game",
+  "match",
+  "won",
+
+  // Rankings/lists
+  "top",
+  "ranking",
 ];
 
 const checkHeuristics = (query: string) => {
@@ -136,34 +186,51 @@ export default function TestRenderSearch() {
   }, [isPromptReady]);
 
   return (
-    <div>
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          if (checkHeuristics(searchQuery) === true) {
-            getResult();
-            setModelDirect("");
-          } else {
-            getModelDirect();
-            setModelSearchSum("");
-          }
-        }}
-      >
-        <input
-          className="border"
-          onChange={(e) => setSearchQuery(e.target.value)}
-        ></input>
-        <button className="p-5 border cursor-pointer" type="submit">
-          Submit
-        </button>
-      </form>
-      <div>{modelSearchSum}</div>
-      <hr></hr>
+    <div className="flex flex-col h-screen border  ">
+      <div className="flex flex-1 min-h-0 overflow-y-scroll border p-2.5 ">
+        <div>{modelSearchSum}</div>
+        <hr></hr>
 
-      <div>
-        {modelDirect.length < 1500 && modelDirect.length > 10
-          ? modelDirect
-          : ""}
+        <div>{modelDirect}</div>
+      </div>
+      <div className=" ">
+        <form
+          className="h-full w-full  flex justify-center px-2.5 py-2.5"
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (checkHeuristics(searchQuery) === true) {
+              getResult();
+              setModelDirect("");
+            } else {
+              getModelDirect();
+              setModelSearchSum("");
+            }
+          }}
+        >
+          <input
+            className="border w-full h-full px-5 bg-neutral-800 outline-none"
+            onChange={(e) => setSearchQuery(e.target.value)}
+            value={searchQuery}
+            placeholder="How Can I Help?"
+          ></input>
+          <div className="flex flex-col ml-2">
+            <button
+              type="button"
+              onClick={() => setSearchQuery("")}
+              className="p-2.5 border bg-neutral-800 cursor-pointer hover:bg-teal-700 transition-all duration-300 group "
+            >
+              <LuX className="w-5 h-5 group-hover:scale-120 transition-all duration-300" />
+            </button>
+            <button
+              className={`p-2.5 ${
+                searchQuery.length > 0 ? "bg-teal-700" : "bg-neutral-800"
+              }  mt-2 border cursor-pointer hover:bg-teal-500 transition-all duration-300 group`}
+              type="submit"
+            >
+              <LuCircleArrowUp className="h-5 w-5 group-hover:scale-120 transition-all duration-300" />
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );
