@@ -1,7 +1,8 @@
 "use client";
 import { LuCircleArrowUp, LuX } from "react-icons/lu";
 
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
+import { chatContext } from "@/context/chat";
 
 interface resultProps {
   title: string;
@@ -105,6 +106,17 @@ export default function TestRenderSearch() {
   const [isPromptReady, setIsPromptReady] = useState(false);
   const [modelDirect, setModelDirect] = useState("");
 
+  const getTempId = () => {
+    return crypto.randomUUID();
+  };
+
+  let tempId = "tempId30572";
+
+  const chatHistoryContext = useContext(chatContext);
+  if (!chatHistoryContext) throw new Error("context not loaded");
+
+  const { chatHistoryClient, setChatHistoryClient } = chatHistoryContext;
+
   async function getResult() {
     try {
       let request = await fetch("/api/get-search", {
@@ -174,6 +186,14 @@ export default function TestRenderSearch() {
       console.log("🔵 Direct END:", new Date().toISOString());
 
       setModelDirect(response.response);
+
+      setChatHistoryClient((prev) =>
+        prev.map((item) =>
+          item.id === tempId
+            ? { ...item, id: getTempId(), model: response.response }
+            : item
+        )
+      );
     } catch (e) {
       console.error(e);
     }
@@ -191,20 +211,37 @@ export default function TestRenderSearch() {
         <div>{modelSearchSum}</div>
         <hr></hr>
 
-        <div>{modelDirect}</div>
+        <div>
+          {chatHistoryClient.map((item, index) => (
+            <div key={index + 1246}>
+              <p>{item.user}</p>
+              <p>{item.model}</p>
+            </div>
+          ))}
+        </div>
       </div>
       <div className=" ">
         <form
-          className="h-full w-full  flex justify-center px-2.5 py-2.5"
+          className="h-full w-full flex justify-center px-2.5 py-2.5"
           onSubmit={(e) => {
             e.preventDefault();
-            if (checkHeuristics(searchQuery) === true) {
-              getResult();
-              setModelDirect("");
-            } else {
-              getModelDirect();
-              setModelSearchSum("");
-            }
+            checkHeuristics(searchQuery) === true
+              ? getResult()
+              : getModelDirect();
+
+            setChatHistoryClient((prev) => [
+              ...prev,
+              { id: tempId, user: searchQuery },
+            ]);
+
+            // if (checkHeuristics(searchQuery) === true) {
+            //   getResult();
+
+            //   setModelDirect("");
+            // } else {
+            //   getModelDirect();
+            //   setModelSearchSum("");
+            // }
           }}
         >
           <input
