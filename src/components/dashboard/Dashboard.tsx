@@ -1,5 +1,6 @@
 import ChatProvider from "@/providers/ChatProvider";
 import React, { ReactNode } from "react";
+import Sidebar from "./Sidebar";
 
 interface Props {
   children: ReactNode;
@@ -7,8 +8,11 @@ interface Props {
 
 export default function Dashboard({ children }: Props) {
   return (
-    <div className="">
-      <ChatProvider>{children}</ChatProvider>
-    </div>
+    <ChatProvider>
+      <div className=" w-full relative">
+        <Sidebar className="absolute border h-full bg-neutral-800" />
+        <main className="w-full">{children}</main>
+      </div>
+    </ChatProvider>
   );
 }
