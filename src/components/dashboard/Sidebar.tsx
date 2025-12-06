@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { LuPanelLeftOpen, LuPanelRightOpen } from "react-icons/lu";
 import { motion } from "motion/react";
+import { chatInstanceContext } from "@/context/chatInstances";
 
 interface Props {
   className: string;
@@ -10,6 +11,12 @@ interface Props {
 
 export default function Sidebar({ className }: Props) {
   const [expandPanel, setExpandPanel] = useState(false);
+
+  const context = useContext(chatInstanceContext);
+  if (!context) throw new Error("context not loaded");
+
+  const { chatInstancesClient, setChatInstancesClient } = context;
+
   return (
     <motion.aside
       initial={{ width: 50 }}
@@ -28,6 +35,11 @@ export default function Sidebar({ className }: Props) {
             >
               <LuPanelRightOpen className="w-6 h-6" />
             </button>
+          </div>
+          <div>
+            {chatInstancesClient.map((item) => (
+              <p key={item.id}>{item.title}</p>
+            ))}
           </div>
         </div>
       ) : (

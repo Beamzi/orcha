@@ -3,15 +3,16 @@
 import React, { Dispatch, SetStateAction } from "react";
 import { createContext } from "react";
 
-export interface chatHistoryType {
-  id?: string;
-  model?: string;
-  user?: string;
+export interface ChatType {
+  id: number;
+  response?: string | null;
+  prompt?: string | null;
+  instanceId: number;
 }
 
-interface contextType {
-  chatHistoryClient: chatHistoryType[];
-  setChatHistoryClient: Dispatch<SetStateAction<chatHistoryType[]>>;
+interface ContextType {
+  chatHistoryClient: ChatType[];
+  setChatHistoryClient: Dispatch<SetStateAction<ChatType[]>>;
 }
 
-export const chatContext = createContext<contextType | undefined>(undefined);
+export const chatContext = createContext<ContextType | undefined>(undefined);

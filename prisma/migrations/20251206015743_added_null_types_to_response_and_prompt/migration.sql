@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Chat" ALTER COLUMN "prompt" DROP NOT NULL,
+ALTER COLUMN "response" DROP NOT NULL;

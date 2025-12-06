@@ -20,23 +20,22 @@ model User {
   Instances ChatInstance[]
   keywords  String?
   createdAt DateTime @default(now())
-
 }
 
 model ChatInstance {
   id       Int @id @default(autoincrement())
+  title    String?
   chatlogs Chat[]
   keywords String?
   author   User @relation(fields: [authorId], references: [id])
   authorId Int
   createdAt DateTime @default(now())
-
 }
 
 model Chat {
   id         Int @id @default(autoincrement())
-  response   String
-  prompt     String
+  response   String?
+  prompt     String?
   instance   ChatInstance @relation(fields: [instanceId], references: [id])
   instanceId Int
 }

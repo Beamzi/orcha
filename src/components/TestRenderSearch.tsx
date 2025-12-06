@@ -106,11 +106,12 @@ export default function TestRenderSearch() {
   const [isPromptReady, setIsPromptReady] = useState(false);
   const [modelDirect, setModelDirect] = useState("");
 
-  const getTempId = () => {
-    return crypto.randomUUID();
-  };
+  // const getTempId = () => {
+  //   return;
+  // };
 
-  let tempId = "tempId30572";
+  let tempId = 36437;
+  let tempInstanceId = 36437;
 
   const chatHistoryContext = useContext(chatContext);
   if (!chatHistoryContext) throw new Error("context not loaded");
@@ -190,7 +191,7 @@ export default function TestRenderSearch() {
       setChatHistoryClient((prev) =>
         prev.map((item) =>
           item.id === tempId
-            ? { ...item, id: getTempId(), model: response.response }
+            ? { ...item, id: 3, response: response.response }
             : item
         )
       );
@@ -214,8 +215,8 @@ export default function TestRenderSearch() {
         <div>
           {chatHistoryClient.map((item, index) => (
             <div key={index + 1246}>
-              <p>{item.user}</p>
-              <p>{item.model}</p>
+              <p>{item.prompt}</p>
+              <p>{item.response}</p>
             </div>
           ))}
         </div>
@@ -231,7 +232,7 @@ export default function TestRenderSearch() {
 
             setChatHistoryClient((prev) => [
               ...prev,
-              { id: tempId, user: searchQuery },
+              { id: tempId, prompt: searchQuery, instanceId: tempInstanceId },
             ]);
 
             // if (checkHeuristics(searchQuery) === true) {
