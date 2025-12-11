@@ -1,5 +1,12 @@
-import React from "react";
+"use client";
+import PromptBar from "@/components/PromptBar";
+import React, { useState } from "react";
 
 export default function StartChat() {
-  return <div></div>;
+  const [promptQuery, setPromptQuery] = useState("");
+  return (
+    <div className="h-full">
+      <PromptBar promptQuery={promptQuery} />
+    </div>
+  );
 }

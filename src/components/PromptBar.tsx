@@ -32,7 +32,7 @@ export default function PromptBar({
 
   return (
     <form
-      className="h-full w-full flex justify-center px-2.5 py-2.5"
+      className="h-full w-full flex justify-center px-2.5 py-2.5 border-1"
       onSubmit={(e) => {
         e.preventDefault();
         checkHeuristics(promptQuery, keywords) === true
@@ -46,21 +46,21 @@ export default function PromptBar({
       }}
     >
       <input
-        className="border w-full h-full px-5 bg-neutral-800 outline-none"
+        className="border min-h-21 w-full h-full px-5 bg-neutral-800 outline-none"
         onChange={(e) => setPromptQuery(e.target.value)}
         value={promptQuery}
         placeholder="How Can I Help?"
       ></input>
-      <div className="flex flex-col ml-2">
+      <div className="flex flex-col ml-2 h-full">
         <button
           type="button"
           onClick={() => setPromptQuery("")}
-          className="p-2.5 border bg-neutral-800 cursor-pointer hover:bg-teal-700 transition-all duration-300 group "
+          className="p-2 border bg-neutral-800 cursor-pointer hover:bg-teal-700 transition-all duration-300 group "
         >
           <LuX className="w-5 h-5 group-hover:scale-120 transition-all duration-300" />
         </button>
         <button
-          className={`p-2.5 ${
+          className={`p-2 ${
             promptQuery.length > 0 ? "bg-teal-700" : "bg-neutral-800"
           }  mt-2 border cursor-pointer hover:bg-teal-500 transition-all duration-300 group`}
           type="submit"

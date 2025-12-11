@@ -1,10 +1,6 @@
 "use client";
-import { LuCircleArrowUp, LuX } from "react-icons/lu";
-
 import { useContext, useEffect, useState } from "react";
 import { chatContext } from "@/context/chat";
-import { checkHeuristics } from "@/lib/checkHeuristics";
-import { keywords } from "@/data/keywords";
 import PromptBar from "./PromptBar";
 
 interface resultProps {
@@ -124,7 +120,6 @@ export default function TestRenderSearch() {
       <div className="flex flex-1 min-h-0 overflow-y-scroll border p-2.5 ">
         {/* <div>{modelSearchSum}</div> */}
         <hr></hr>
-
         <div>
           {chatHistoryClient.map((item, index) => (
             <div className="flex flex-col" key={index + 1246}>
@@ -134,7 +129,7 @@ export default function TestRenderSearch() {
           ))}
         </div>
       </div>
-      <div className=" ">
+      <div className="">
         <PromptBar
           getResult={getResult}
           getModelDirect={getModelDirect}
