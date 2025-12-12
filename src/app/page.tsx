@@ -1,14 +1,11 @@
 import TestRenderSearch from "@/components/TestRenderSearch";
 import { prisma } from "@/lib/prisma";
-
-// async function getChat () {
-//   const request = await prisma.chatInstance.findUnique({
-//     where: {  }
-//   })
-// }
+import { auth } from "../../auth";
 
 export default async function Home() {
+  const session = await auth();
   // const posts = await testRead();
+  console.log(session);
 
   return (
     <div>

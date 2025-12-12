@@ -16,10 +16,6 @@ export default function TestRenderSearch() {
   const [isPromptReady, setIsPromptReady] = useState(false);
   const [modelDirect, setModelDirect] = useState("");
 
-  // const getTempId = () => {
-  //   return;
-  // };
-
   let tempId = 36437;
 
   const chatHistoryContext = useContext(chatContext);
@@ -69,7 +65,6 @@ export default function TestRenderSearch() {
       const response = await request.json();
 
       setModelSearchSum(response.response);
-
       setChatHistoryClient((prev) =>
         prev.map((item) =>
           item.id === tempId
@@ -77,6 +72,57 @@ export default function TestRenderSearch() {
             : item
         )
       );
+
+      const instanceResponse = await createInstance();
+      createChat(instanceResponse.prismaResponse);
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  async function createInstance() {
+    try {
+      const request = await fetch("/api/create-instance", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          title: promptQuery,
+        }),
+      });
+      const response = await request.json();
+
+      // const instanceId = response.prismaResponse.id;
+      // const instanceId2 = response.response.response.prismaResponse.id;
+      console.log({ response });
+      console.log(response.prismaResponse.id, "response.prismaResponse.id");
+
+      // console.log(instanceId, "response.prismaResponse.id");
+      // console.log(instanceId2, "response.response.prismaResponse.id");
+
+      return response;
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  async function createChat(instanceId: number) {
+    try {
+      const request = await fetch("/api/create-chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          response: modelDirect,
+          prompt: promptQuery,
+          instanceId: instanceId,
+        }),
+      });
+
+      const response = await request.json();
+      console.log({ response });
     } catch (e) {
       console.error(e);
     }
@@ -104,6 +150,7 @@ export default function TestRenderSearch() {
             : item
         )
       );
+      createInstance();
     } catch (e) {
       console.error(e);
     }

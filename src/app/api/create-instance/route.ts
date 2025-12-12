@@ -1,18 +1,21 @@
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { auth } from "../../../../auth";
 
 export async function POST(request: Request) {
   const result = await request.json();
+  const session = await auth();
 
-  const { title, chatlogs } = result;
+  const { title } = result;
 
-  const prismaRequest = await prisma.chatInstance.create({
+  const userId = Number(session?.user?.id);
+
+  const prismaResponse = await prisma.chatInstance.create({
     data: {
       title: title,
-      chatlogs: chatlogs,
-      authorId: 1,
+      authorId: userId,
     },
   });
 
-  return NextResponse.json(prismaRequest);
+  return NextResponse.json({ prismaResponse });
 }
