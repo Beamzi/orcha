@@ -17,6 +17,24 @@ export default function Sidebar({ className }: Props) {
 
   const { chatInstancesClient, setChatInstancesClient } = context;
 
+  async function deleteInstanceAPI(instanceId: number) {
+    try {
+      const request = await fetch("/api/delete-instance", {
+        method: "POST",
+        headers: {
+          "Content-type": "application/json",
+        },
+        body: JSON.stringify({ instanceId: instanceId }),
+      });
+
+      setChatInstancesClient((prev) =>
+        prev.filter((obj) => obj.id !== instanceId),
+      );
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
   return (
     <motion.aside
       initial={{ width: 50 }}
@@ -38,7 +56,18 @@ export default function Sidebar({ className }: Props) {
           </div>
           <div>
             {chatInstancesClient.map((item) => (
-              <p key={item.id}>{item.title}</p>
+              <div className="flex justify-between px-2" key={item.id}>
+                <p>{item.title}</p>
+                <button
+                  className="cursor-pointer"
+                  onClick={() => {
+                    deleteInstanceAPI(item.id);
+                  }}
+                >
+                  X
+                </button>
+                {/* {instanceId} */}
+              </div>
             ))}
           </div>
         </div>

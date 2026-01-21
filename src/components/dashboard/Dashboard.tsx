@@ -1,5 +1,5 @@
 import ChatProvider from "@/providers/ChatProvider";
-import React, { ReactNode } from "react";
+import { ReactNode } from "react";
 import Sidebar from "./Sidebar";
 import { getChatInstances } from "@/lib/queries/getChat";
 import ChatInstancesProvider from "@/providers/ChatInstancesProvider";

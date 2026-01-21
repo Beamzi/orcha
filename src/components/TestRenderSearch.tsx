@@ -2,6 +2,7 @@
 import { useContext, useEffect, useState } from "react";
 import { chatContext } from "@/context/chat";
 import PromptBar from "./PromptBar";
+import { chatInstanceContext } from "@/context/chatInstances";
 
 interface resultProps {
   title: string;
@@ -23,6 +24,12 @@ export default function TestRenderSearch() {
 
   const { chatHistoryClient, setChatHistoryClient } = chatHistoryContext;
 
+  const instanceContext = useContext(chatInstanceContext);
+
+  if (!instanceContext) throw new Error("instance content not loaded");
+
+  const { chatInstancesClient, setChatInstancesClient } = instanceContext;
+
   async function getResult() {
     try {
       let request = await fetch("/api/get-search", {
@@ -34,7 +41,7 @@ export default function TestRenderSearch() {
       });
       const response = await request.json();
       const jsonResponseString = JSON.stringify(
-        response.searchResponse.web.results
+        response.searchResponse.web.results,
       );
       setPromptInject(jsonResponseString);
       setSearchResult(response.searchResponse.web.results);
@@ -58,9 +65,6 @@ export default function TestRenderSearch() {
           stream: false,
         }),
       });
-      // console.log(searchResult);
-      // console.log(promptInject, "this is console log");
-      // console.log("🟢 Summary FETCH SENT, waiting for response...");
 
       const response = await request.json();
 
@@ -69,8 +73,8 @@ export default function TestRenderSearch() {
         prev.map((item) =>
           item.id === tempId
             ? { ...item, id: 3, response: response.response }
-            : item
-        )
+            : item,
+        ),
       );
 
       const instanceResponse = await createInstance();
@@ -92,6 +96,10 @@ export default function TestRenderSearch() {
         }),
       });
       const response = await request.json();
+
+      setChatInstancesClient((prev) =>
+        prev.map((obj) => ({ ...obj, id: tempId })),
+      );
 
       // const instanceId = response.prismaResponse.id;
       // const instanceId2 = response.response.response.prismaResponse.id;
@@ -142,13 +150,12 @@ export default function TestRenderSearch() {
 
       const response = await request.json();
       setModelDirect(response.response);
-
       setChatHistoryClient((prev) =>
         prev.map((item) =>
           item.id === tempId
             ? { ...item, id: 3, response: response.response }
-            : item
-        )
+            : item,
+        ),
       );
       createInstance();
     } catch (e) {
