@@ -12,6 +12,7 @@ interface Props {
   getModelDirect: () => Promise<void>;
   promptQuery: string;
   setPromptQuery: (value: string) => void;
+  instanceId: number | undefined;
 }
 
 export default function PromptBar({
@@ -19,6 +20,7 @@ export default function PromptBar({
   getModelDirect,
   promptQuery,
   setPromptQuery,
+  instanceId,
 }: Props) {
   let tempId = 36437;
   let tempInstanceId = 36437;
@@ -35,13 +37,18 @@ export default function PromptBar({
       className="h-full w-full flex justify-center px-2.5 py-2.5 border"
       onSubmit={(e) => {
         e.preventDefault();
+
         checkHeuristics(promptQuery, keywords) === true
           ? getResult()
           : getModelDirect();
 
         setChatHistoryClient((prev) => [
           ...prev,
-          { id: tempId, prompt: promptQuery, instanceId: tempInstanceId },
+          {
+            id: tempId,
+            prompt: promptQuery,
+            instanceId: instanceId ? instanceId : tempInstanceId,
+          },
         ]);
       }}
     >

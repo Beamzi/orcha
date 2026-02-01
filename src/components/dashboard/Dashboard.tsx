@@ -1,8 +1,9 @@
 import ChatProvider from "@/providers/ChatProvider";
 import { ReactNode } from "react";
 import Sidebar from "./Sidebar";
-import { getChatInstances } from "@/lib/queries/getChat";
+import { getChatInstances } from "@/lib/queries/getChatInstances";
 import ChatInstancesProvider from "@/providers/ChatInstancesProvider";
+import GlobalHooksProvider from "@/providers/GlobalHooksProvider";
 
 interface Props {
   children: ReactNode;
@@ -13,10 +14,10 @@ export default async function Dashboard({ children }: Props) {
   return (
     <ChatProvider>
       <ChatInstancesProvider chatInstances={chatInstances}>
-        <div className=" w-full relative">
-          <Sidebar className="absolute border h-full bg-neutral-800" />
-          <main className="w-full">{children}</main>
-        </div>
+        <GlobalHooksProvider>
+          <Sidebar className="absolute border h-full bg-neutral-800"></Sidebar>
+          <main>{children}</main>
+        </GlobalHooksProvider>
       </ChatInstancesProvider>
     </ChatProvider>
   );

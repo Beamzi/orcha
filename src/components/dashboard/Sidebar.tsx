@@ -4,6 +4,7 @@ import React, { useContext, useState } from "react";
 import { LuPanelLeftOpen, LuPanelRightOpen } from "react-icons/lu";
 import { motion } from "motion/react";
 import { chatInstanceContext } from "@/context/chatInstances";
+import { globalHooksContext } from "@/context/globalHooks";
 
 interface Props {
   className: string;
@@ -17,7 +18,16 @@ export default function Sidebar({ className }: Props) {
 
   const { chatInstancesClient, setChatInstancesClient } = context;
 
+  const globalHooks = useContext(globalHooksContext);
+
+  if (!globalHooks) throw new Error("globalHooks not loaded");
+
+  const { instanceId, setInstanceId } = globalHooks;
+
   async function deleteInstanceAPI(instanceId: number) {
+    setChatInstancesClient((prev) =>
+      prev.filter((obj) => obj.id !== instanceId),
+    );
     try {
       const request = await fetch("/api/delete-instance", {
         method: "POST",
@@ -26,10 +36,6 @@ export default function Sidebar({ className }: Props) {
         },
         body: JSON.stringify({ instanceId: instanceId }),
       });
-
-      setChatInstancesClient((prev) =>
-        prev.filter((obj) => obj.id !== instanceId),
-      );
     } catch (e) {
       console.error(e);
     }
@@ -54,17 +60,24 @@ export default function Sidebar({ className }: Props) {
               <LuPanelRightOpen className="w-6 h-6" />
             </button>
           </div>
-          <div>
+          <div className="">
             {chatInstancesClient.map((item) => (
-              <div className="flex justify-between px-2" key={item.id}>
-                <p>{item.title}</p>
+              <div className="flex justify-between " key={item.id}>
                 <button
-                  className="cursor-pointer"
+                  className={`px-2 cursor-pointer w-full justify-start text-start  ${instanceId === item.id && "bg-red-400"}`}
+                  onClick={() => {
+                    setInstanceId(item.id);
+                  }}
+                >
+                  {item.title}
+                </button>
+                <button
+                  className="cursor-pointer px-1 border  "
                   onClick={() => {
                     deleteInstanceAPI(item.id);
                   }}
                 >
-                  X
+                  x
                 </button>
                 {/* {instanceId} */}
               </div>

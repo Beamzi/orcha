@@ -9,7 +9,11 @@ interface resultProps {
   url: string;
 }
 
-export default function TestRenderSearch() {
+interface Props {
+  instanceId: number | undefined;
+}
+
+export default function TestRenderSearch({ instanceId }: Props) {
   const [promptQuery, setPromptQuery] = useState("");
   const [searchResult, setSearchResult] = useState<resultProps[]>([]);
   const [promptInject, setPromptInject] = useState("");
@@ -69,22 +73,22 @@ export default function TestRenderSearch() {
       const response = await request.json();
 
       setModelSearchSum(response.response);
-      setChatHistoryClient((prev) =>
-        prev.map((item) =>
-          item.id === tempId
-            ? { ...item, id: 3, response: response.response }
-            : item,
-        ),
-      );
+      // setChatHistoryClient((prev) =>
+      //   prev.map((item) =>
+      //     item.id === tempId
+      //       ? { ...item, id: 3, response: response.response }
+      //       : item,
+      //   ),
+      // );
 
-      const instanceResponse = await createInstance();
-      createChat(instanceResponse.prismaResponse);
+      // const instanceResponse = await createInstance();
+      // createChat(instanceResponse.prismaResponse);
     } catch (e) {
       console.error(e);
     }
   }
 
-  async function createInstance() {
+  async function createInstance(modelResponse: string) {
     try {
       const request = await fetch("/api/create-instance", {
         method: "POST",
@@ -93,44 +97,31 @@ export default function TestRenderSearch() {
         },
         body: JSON.stringify({
           title: promptQuery,
+          chatlogs: {
+            response: modelResponse,
+            prompt: promptQuery,
+          },
         }),
       });
       const response = await request.json();
+      console.log({ response });
 
-      setChatInstancesClient((prev) =>
-        prev.map((obj) => ({ ...obj, id: tempId })),
+      setChatHistoryClient((prev) =>
+        prev.map((item) =>
+          item.id === tempId
+            ? {
+                ...item,
+                id: response.prismaResponse.chatlogs[0].id,
+                instanceId: response.prismaResponse.id,
+                response: modelResponse,
+              }
+            : item,
+        ),
       );
 
-      // const instanceId = response.prismaResponse.id;
-      // const instanceId2 = response.response.response.prismaResponse.id;
-      console.log({ response });
       console.log(response.prismaResponse.id, "response.prismaResponse.id");
 
-      // console.log(instanceId, "response.prismaResponse.id");
-      // console.log(instanceId2, "response.response.prismaResponse.id");
-
       return response;
-    } catch (e) {
-      console.error(e);
-    }
-  }
-
-  async function createChat(instanceId: number) {
-    try {
-      const request = await fetch("/api/create-chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          response: modelDirect,
-          prompt: promptQuery,
-          instanceId: instanceId,
-        }),
-      });
-
-      const response = await request.json();
-      console.log({ response });
     } catch (e) {
       console.error(e);
     }
@@ -150,14 +141,47 @@ export default function TestRenderSearch() {
 
       const response = await request.json();
       setModelDirect(response.response);
+
+      if (instanceId) {
+        createChat(instanceId, response.response);
+      } else {
+        createInstance(response.response);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  async function createChat(instanceId: number, modelResponse: string) {
+    try {
+      const request = await fetch("/api/create-chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          response: modelResponse,
+          prompt: promptQuery,
+          instanceId: instanceId,
+        }),
+      });
+
+      const response = await request.json();
+      console.log({ response });
+
       setChatHistoryClient((prev) =>
         prev.map((item) =>
           item.id === tempId
-            ? { ...item, id: 3, response: response.response }
+            ? {
+                ...item,
+                id: response.prismaResponse.id,
+                response: modelResponse,
+              }
             : item,
         ),
       );
-      createInstance();
+
+      console.log({ response });
     } catch (e) {
       console.error(e);
     }
@@ -170,27 +194,14 @@ export default function TestRenderSearch() {
   }, [isPromptReady]);
 
   return (
-    <div className="flex flex-col h-screen border  ">
-      <div className="flex flex-1 min-h-0 overflow-y-scroll border p-2.5 ">
-        {/* <div>{modelSearchSum}</div> */}
-        <hr></hr>
-        <div>
-          {chatHistoryClient.map((item, index) => (
-            <div className="flex flex-col" key={index + 1246}>
-              <p>{item.prompt}</p>
-              <p>{item.response}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-      <div className="">
-        <PromptBar
-          getResult={getResult}
-          getModelDirect={getModelDirect}
-          promptQuery={promptQuery}
-          setPromptQuery={setPromptQuery}
-        />
-      </div>
+    <div className="">
+      <PromptBar
+        getResult={getResult}
+        getModelDirect={getModelDirect}
+        promptQuery={promptQuery}
+        setPromptQuery={setPromptQuery}
+        instanceId={instanceId}
+      />
     </div>
   );
 }

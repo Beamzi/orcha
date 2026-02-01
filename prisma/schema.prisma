@@ -69,6 +69,7 @@ model VerificationToken {
 
 
 
+
 model ChatInstance {
   id       Int @id @default(autoincrement())
   title    String?
@@ -83,7 +84,7 @@ model Chat {
   id         Int @id @default(autoincrement())
   response   String?
   prompt     String?
-  instance   ChatInstance @relation(fields: [instanceId], references: [id])
+  instance   ChatInstance @relation(fields: [instanceId], references: [id], onDelete: Cascade)
   instanceId Int
 }
 
