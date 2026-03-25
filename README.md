@@ -1,36 +1,66 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Orcha
+
+**Local AI, made accessible.**
+
+Orcha is an early-stage desktop chat application that brings a proper UI, persistent chat history, and live web search to locally-run AI models — no cloud, no subscriptions, no data leaving your machine.
+
+Built around [Ollama](https://ollama.com), Orcha wraps a locally-installed language model in a full-featured interface that non-technical users can actually use.
+
+---
+
+## The Problem
+
+Small local AI models are powerful, private, and free to run — but they're locked behind a command line, have no memory between sessions, and no access to current information. Orcha is an attempt to fix that.
+
+---
+
+## What It Does
+
+- **Local model interface** — Chat UI for Ollama-powered models running entirely on your machine
+- **Persistent chat history** — Conversations are saved and organised into instances
+- **Live web search** — Brave Search API injects real-time results into the model context before responding
+- **No cloud dependency** — Your prompts, responses, and history never leave your machine
+
+---
+
+## Stack
+
+React · Next.js · TypeScript · Tailwind CSS · Prisma · Ollama API · Brave Search API
+
+---
+
+## Status
+
+Early alpha. Core chat and search-inject flow are functional. Installer tooling and full UI in progress.
+
+---
 
 ## Getting Started
 
-First, run the development server:
+1. Install [Ollama](https://ollama.com) and pull a model:
+   ```bash
+   ollama pull gemma3
+   ```
+2. Clone the repo and install dependencies:
+   ```bash
+   git clone https://github.com/yourusername/orcha
+   cd orcha
+   npm install
+   ```
+3. Run the development server:
+   ```bash
+   npm run dev
+   ```
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+---
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Roadmap
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- [ ] One-click installer (no CLI required)
+- [ ] Expanded model support
+- [ ] Refined UI and conversation management
+- [ ] Brave Search integration polish
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+_Orcha is an independent project by [Your Agency]. Built to explore the frontier of private, local-first AI tooling._
