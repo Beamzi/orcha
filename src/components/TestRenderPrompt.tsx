@@ -25,7 +25,7 @@ export default function TestRenderPrompt() {
     let result = await response.json();
 
     setResponseContent(result.response);
-    console.log(result);
+    // console.log(result);
   }
 
   // useEffect(() => {

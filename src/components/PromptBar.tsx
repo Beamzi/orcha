@@ -1,11 +1,20 @@
 "use client";
 
-import React, { Dispatch, SetStateAction, useContext } from "react";
+import React, {
+  Dispatch,
+  SetStateAction,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import { checkHeuristics } from "@/lib/checkHeuristics";
 import { chatContext } from "@/context/chat";
 import { keywords } from "@/data/keywords";
 import { LuCircleArrowUp, LuX } from "react-icons/lu";
 import { ChatType } from "@/context/chat";
+import { ChatInstancesType } from "@/context/chatInstances";
+import { sessionOrchaContext } from "@/context/session";
+import { globalHooksContext } from "@/context/globalHooks";
 
 interface Props {
   getResult: () => Promise<void>;
@@ -13,6 +22,11 @@ interface Props {
   promptQuery: string;
   setPromptQuery: (value: string) => void;
   instanceId: number | undefined;
+  tempId: number;
+  setTempId: Dispatch<SetStateAction<number>>;
+  setTempInstanceId: Dispatch<SetStateAction<number>>;
+  tempInstanceId: number;
+  setChatInstancesClient: Dispatch<SetStateAction<ChatInstancesType[]>>;
 }
 
 export default function PromptBar({
@@ -21,9 +35,12 @@ export default function PromptBar({
   promptQuery,
   setPromptQuery,
   instanceId,
+  tempId,
+  setTempId,
+  setTempInstanceId,
+  tempInstanceId,
+  setChatInstancesClient,
 }: Props) {
-  let tempId = 36437;
-  let tempInstanceId = 36437;
   const context = useContext(chatContext);
 
   if (!context) {
@@ -32,16 +49,20 @@ export default function PromptBar({
 
   const { chatHistoryClient, setChatHistoryClient } = context;
 
+  const sessionContext = useContext(sessionOrchaContext);
+  if (!sessionContext) throw new Error("invalid session");
+
+  const userSession = sessionContext;
+  const authorId = userSession.id;
+
+  // let tempId = () => Math.floor(Math.random() * 15204);
+  // let tempInstanceId = () => Date.now();
+
   return (
     <form
       className="h-full w-full flex justify-center px-2.5 py-2.5 border"
       onSubmit={(e) => {
         e.preventDefault();
-
-        checkHeuristics(promptQuery, keywords) === true
-          ? getResult()
-          : getModelDirect();
-
         setChatHistoryClient((prev) => [
           ...prev,
           {
@@ -50,6 +71,18 @@ export default function PromptBar({
             instanceId: instanceId ? instanceId : tempInstanceId,
           },
         ]);
+        !instanceId &&
+          setChatInstancesClient((prev) => [
+            ...prev,
+            {
+              id: tempInstanceId,
+              title: promptQuery,
+            },
+          ]);
+
+        checkHeuristics(promptQuery, keywords) === true
+          ? getResult()
+          : getModelDirect();
       }}
     >
       <input

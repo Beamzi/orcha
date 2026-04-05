@@ -6,11 +6,11 @@ import { ChatType } from "./chat";
 export interface ChatInstancesType {
   id: number;
   title: string | null;
-  chatlogs: ChatType[];
-  keywords: string | null;
-  authorId: number;
-  author: { id: number };
-  createdAt: Date;
+  chatlogs?: ChatType[];
+  keywords?: string | null;
+  authorId?: number;
+  author?: { id: number };
+  createdAt?: Date;
 }
 
 export interface ChatInstancesContextType {

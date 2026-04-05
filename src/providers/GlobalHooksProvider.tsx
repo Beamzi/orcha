@@ -11,8 +11,31 @@ interface Props {
 export default function GlobalHooksProvider({ children }: Props) {
   const [instanceId, setInstanceId] = useState<number | undefined>(undefined);
 
+  const [forceInstance, setForceInstance] = useState(false);
+
+  // const [tempId, setTempId] = useState<number>(() =>
+  //   Math.floor(Math.random() * 15204),
+  // );
+  // const [tempInstanceId, setTempInstanceId] = useState<number>(() =>
+  //   Date.now(),
+  // );
+
+  const [tempId, setTempId] = useState<number>(7898576);
+  const [tempInstanceId, setTempInstanceId] = useState<number>(2534453);
+
   return (
-    <globalHooksContext.Provider value={{ instanceId, setInstanceId }}>
+    <globalHooksContext.Provider
+      value={{
+        instanceId,
+        setInstanceId,
+        forceInstance,
+        setForceInstance,
+        tempId,
+        tempInstanceId,
+        setTempId,
+        setTempInstanceId,
+      }}
+    >
       {children}
     </globalHooksContext.Provider>
   );

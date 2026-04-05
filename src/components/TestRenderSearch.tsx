@@ -1,8 +1,16 @@
 "use client";
-import { useContext, useEffect, useState } from "react";
+import {
+  unstable_startGestureTransition,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import { chatContext } from "@/context/chat";
 import PromptBar from "./PromptBar";
 import { chatInstanceContext } from "@/context/chatInstances";
+import { sessionOrchaContext } from "@/context/session";
+import { User } from "next-auth";
+import { globalHooksContext } from "@/context/globalHooks";
 
 interface resultProps {
   title: string;
@@ -21,12 +29,33 @@ export default function TestRenderSearch({ instanceId }: Props) {
   const [isPromptReady, setIsPromptReady] = useState(false);
   const [modelDirect, setModelDirect] = useState("");
 
-  let tempId = 36437;
+  const sessionContext = useContext(sessionOrchaContext);
+  if (!sessionContext) throw new Error("invalid session");
+
+  const userSession = sessionContext;
+  const authorId = userSession.id;
 
   const chatHistoryContext = useContext(chatContext);
   if (!chatHistoryContext) throw new Error("context not loaded");
 
   const { chatHistoryClient, setChatHistoryClient } = chatHistoryContext;
+
+  const globalHooks = useContext(globalHooksContext);
+  if (!globalHooks) throw new Error("globals not loaded");
+
+  const {
+    forceInstance,
+    setForceInstance,
+    tempId,
+    tempInstanceId,
+    setTempId,
+    setTempInstanceId,
+
+    setInstanceId: setSelectedInstanceId,
+  } = globalHooks;
+
+  // const [tempId, setTempId] = useState<number>(0);
+  // const [tempInstanceId, setTempInstanceId] = useState(0);
 
   const instanceContext = useContext(chatInstanceContext);
 
@@ -73,16 +102,32 @@ export default function TestRenderSearch({ instanceId }: Props) {
       const response = await request.json();
 
       setModelSearchSum(response.response);
-      // setChatHistoryClient((prev) =>
-      //   prev.map((item) =>
-      //     item.id === tempId
-      //       ? { ...item, id: 3, response: response.response }
-      //       : item,
-      //   ),
-      // );
+    } catch (e) {
+      console.error(e);
+    }
+  }
 
-      // const instanceResponse = await createInstance();
-      // createChat(instanceResponse.prismaResponse);
+  async function getModelDirect() {
+    try {
+      const request = await fetch("http://localhost:11434/api/generate", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          model: "gemma3:1b",
+          prompt: promptQuery,
+          stream: false,
+        }),
+      });
+
+      const response = await request.json();
+      setModelDirect(response.response);
+
+      //this is where an instance is creaded OR an addition to the chatlog of an instance by ID
+      if (instanceId) {
+        createChat(instanceId, response.response);
+      } else {
+        createInstance(response.response);
+      }
     } catch (e) {
       console.error(e);
     }
@@ -104,7 +149,21 @@ export default function TestRenderSearch({ instanceId }: Props) {
         }),
       });
       const response = await request.json();
-      console.log({ response });
+      // console.log({ response });
+
+      setChatInstancesClient((prev) =>
+        prev.map((item) =>
+          item.id === tempInstanceId
+            ? {
+                ...item,
+                id: response.prismaResponse.id,
+                chatlogs: chatHistoryClient.filter(
+                  (chat) => chat.instanceId === response.prismaResponse.id,
+                ),
+              }
+            : item,
+        ),
+      );
 
       setChatHistoryClient((prev) =>
         prev.map((item) =>
@@ -119,39 +178,15 @@ export default function TestRenderSearch({ instanceId }: Props) {
         ),
       );
 
-      console.log(response.prismaResponse.id, "response.prismaResponse.id");
+      setSelectedInstanceId(response.prismaResponse.id);
+
+      // console.log(response.prismaResponse.id, "response.prismaResponse.id");
 
       return response;
     } catch (e) {
       console.error(e);
     }
   }
-
-  async function getModelDirect() {
-    try {
-      const request = await fetch("http://localhost:11434/api/generate", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          model: "gemma3:1b",
-          prompt: promptQuery,
-          stream: false,
-        }),
-      });
-
-      const response = await request.json();
-      setModelDirect(response.response);
-
-      if (instanceId) {
-        createChat(instanceId, response.response);
-      } else {
-        createInstance(response.response);
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  }
-
   async function createChat(instanceId: number, modelResponse: string) {
     try {
       const request = await fetch("/api/create-chat", {
@@ -165,10 +200,8 @@ export default function TestRenderSearch({ instanceId }: Props) {
           instanceId: instanceId,
         }),
       });
-
       const response = await request.json();
-      console.log({ response });
-
+      // console.log({ response });
       setChatHistoryClient((prev) =>
         prev.map((item) =>
           item.id === tempId
@@ -181,7 +214,7 @@ export default function TestRenderSearch({ instanceId }: Props) {
         ),
       );
 
-      console.log({ response });
+      // console.log({ response });
     } catch (e) {
       console.error(e);
     }
@@ -194,13 +227,18 @@ export default function TestRenderSearch({ instanceId }: Props) {
   }, [isPromptReady]);
 
   return (
-    <div className="">
+    <div className="w-full">
       <PromptBar
         getResult={getResult}
         getModelDirect={getModelDirect}
         promptQuery={promptQuery}
         setPromptQuery={setPromptQuery}
         instanceId={instanceId}
+        tempId={tempId}
+        setTempId={setTempId}
+        setTempInstanceId={setTempInstanceId}
+        tempInstanceId={tempInstanceId}
+        setChatInstancesClient={setChatInstancesClient}
       />
     </div>
   );
