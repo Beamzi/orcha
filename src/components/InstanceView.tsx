@@ -2,14 +2,37 @@
 
 import { chatInstanceContext } from "@/context/chatInstances";
 import { globalHooksContext } from "@/context/globalHooks";
-import React, { useContext } from "react";
+import React, { useContext, useEffect, useRef } from "react";
 import TestRenderSearch from "./TestRenderSearch";
-import { chatContext } from "@/context/chat";
+import { chatContext, ChatType } from "@/context/chat";
+import remarkGfm from "remark-gfm";
 
-// interface Props {
-//   instanceId: number | undefined;
-//   setInstanceId: (value: number | undefined) => void;
-// }
+import { createRoot } from "react-dom/client";
+import Markdown from "react-markdown";
+
+const markdownRenderer = (response: string | null | undefined) => {
+  return (
+    <Markdown
+      remarkPlugins={[remarkGfm]}
+      components={{
+        ul: ({ children }) => (
+          <ul className="list-disc pl-6 my-2">{children}</ul>
+        ),
+        ol: ({ children }) => (
+          <ol className="list-decimal pl-6 my-2">{children}</ol>
+        ),
+        li: ({ children }) => (
+          <li className="my-1 text-neutral-400">{children}</li>
+        ),
+        p: ({ children }) => (
+          <p className="py-2 text-neutral-100">{children}</p>
+        ),
+      }}
+    >
+      {response}
+    </Markdown>
+  );
+};
 
 export default function InstanceView({}) {
   const context = useContext(chatInstanceContext);
@@ -26,10 +49,6 @@ export default function InstanceView({}) {
 
   const { chatHistoryClient, setChatHistoryClient } = chatHistoryContext;
 
-  // const selectedInstance = chatInstancesClient.filter(
-  //   (instance) => instance.id === instanceId,
-  // );
-
   const selectedInstance = chatInstancesClient.find(
     (instance) => instance.id === instanceId,
   );
@@ -38,40 +57,39 @@ export default function InstanceView({}) {
     (instance) => instance.instanceId === instanceId,
   );
 
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [chatHistoryClient, selectedInstance?.chatlogs]);
+
+  const chatMarkup = (obj: ChatType) => {
+    return (
+      <div key={obj.id}>
+        <div className="border-b my-5 border-neutral-700">
+          <p className="my-5 text-lg text-red-400">{obj.prompt}</p>
+        </div>
+        <div className="ml-2 my-5">{markdownRenderer(obj.response)}</div>
+      </div>
+    );
+  };
   return (
     <>
       <main className="flex justify-center items-center">
         <div className="flex items-center max-w-1/2 min-w-1/2 flex-col h-screen border">
-          <div className="flex flex-col flex-1 w-full min-h-0 overflow-y-scroll border p-2.5">
+          <div className="flex flex-col flex-1 w-full min-h-0 px-7 overflow-y-scroll custom-scroll border p-2.5">
             {instanceId &&
-              selectedInstance?.chatlogs.map((obj) => (
-                <div key={obj.id}>
-                  <p>{obj.prompt}</p>
-                  <p>{obj.response}</p>
-                </div>
-              ))}
-            {/* <div>{modelSearchSum}</div> */}
-            <hr></hr>
+              selectedInstance?.chatlogs?.map((obj) => chatMarkup(obj))}
             {instanceId ? (
-              selectedChat.map((item, index) => (
-                <div className="flex flex-col" key={item.id}>
-                  <p>{item.prompt}</p>
-                  <p>{item.response}</p>
-                </div>
-              ))
+              selectedChat.map((obj, index) => chatMarkup(obj))
             ) : (
               <div>
                 {chatHistoryClient.map(
-                  (item) =>
-                    item.instanceId === tempInstanceId && (
-                      <div key={item.id + 55}>
-                        <p>{item.prompt}</p>
-                        <p>{item.response}</p>
-                      </div>
-                    ),
+                  (obj) => obj.instanceId === tempInstanceId && chatMarkup(obj),
                 )}
               </div>
             )}
+            <div ref={bottomRef} />
           </div>
           <TestRenderSearch instanceId={instanceId} />
         </div>
@@ -79,14 +97,3 @@ export default function InstanceView({}) {
     </>
   );
 }
-
-// chatHistoryClient
-//                     .filter(
-//                       (chat) => chat.instanceId !== tempInstanceId
-//                     )
-//                     .map((item) => (
-//                       <div key={item.id + 1}>
-//                         <p>{item.prompt}</p>
-//                         <p>{item.response}</p>
-//                       </div>
-//                     ))

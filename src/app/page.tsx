@@ -4,7 +4,7 @@ import { auth } from "../../auth";
 import InstanceView from "@/components/InstanceView";
 
 const session = await auth();
-console.log(session);
+// console.log(session);
 export default async function Home() {
   return (
     <div className="border-">

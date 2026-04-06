@@ -63,6 +63,10 @@ export default function TestRenderSearch({ instanceId }: Props) {
 
   const { chatInstancesClient, setChatInstancesClient } = instanceContext;
 
+  const selectedInstance = chatInstancesClient.find(
+    (instance) => instance.id === instanceId,
+  );
+
   async function getResult() {
     try {
       let request = await fetch("/api/get-search", {
@@ -83,7 +87,7 @@ export default function TestRenderSearch({ instanceId }: Props) {
         setIsPromptReady(false);
       }, 10);
     } catch (e) {
-      console.error(e);
+      // console.error(e);
     }
   }
 

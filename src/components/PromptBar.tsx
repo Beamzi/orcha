@@ -80,9 +80,11 @@ export default function PromptBar({
             },
           ]);
 
-        checkHeuristics(promptQuery, keywords) === true
-          ? getResult()
-          : getModelDirect();
+        getModelDirect();
+
+        // checkHeuristics(promptQuery, keywords) === true
+        //   ? getResult()
+        //   : getModelDirect();
       }}
     >
       <input

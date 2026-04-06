@@ -40,6 +40,10 @@ export default function Sidebar({ className }: Props) {
     setTempInstanceId,
   } = globalHooks;
 
+  const selectedInstance = chatInstancesClient.find(
+    (instance) => instance.id === instanceId,
+  );
+
   async function deleteInstanceAPI(instanceId: number) {
     setChatInstancesClient((prev) =>
       prev.filter((obj) => obj.id !== instanceId),
@@ -98,6 +102,7 @@ export default function Sidebar({ className }: Props) {
                   className={`px-2 cursor-pointer w-full justify-start text-start  ${instanceId === item.id && "bg-red-400"}`}
                   onClick={() => {
                     setInstanceId(item.id);
+                    console.log(selectedInstance?.chatlogs);
                   }}
                 >
                   {item.title}

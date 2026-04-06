@@ -5,9 +5,5 @@ import React, { useState } from "react";
 
 export default function StartChat() {
   const [promptQuery, setPromptQuery] = useState("");
-  return (
-    <div className="">
-      <TestRenderSearch />
-    </div>
-  );
+  return <div className="">{/* <TestRenderSearch /> */}</div>;
 }
