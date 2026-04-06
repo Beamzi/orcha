@@ -5,6 +5,7 @@ import React, {
   SetStateAction,
   useContext,
   useEffect,
+  useRef,
   useState,
 } from "react";
 import { checkHeuristics } from "@/lib/checkHeuristics";
@@ -58,6 +59,9 @@ export default function PromptBar({
 
   const [isSubmitted, setIsSubmitted] = useState(false);
 
+  const [addSpin, setAddSpin] = useState(0);
+  const addSpinRef = useRef(addSpin);
+
   return (
     <section className="px-5 pt-5 mb-5 rounded-xl border bg-neutral-900 border-neutral-700">
       <form
@@ -84,6 +88,10 @@ export default function PromptBar({
           getModelDirect();
           setPromptQuery("");
           setIsSubmitted(true);
+
+          setAddSpin((prev) => (prev += 360));
+
+          setTimeout(() => setIsSubmitted(false), 800);
 
           // checkHeuristics(promptQuery, keywords) === true
           //   ? getResult()
@@ -119,12 +127,15 @@ export default function PromptBar({
           className={`border bg-red-400  flex p-3 mr-2 rounded-xl border-neutral-700`}
         >
           <motion.div
-            animate={{ rotate: isSubmitted ? 360 : 0 }}
+            animate={{
+              rotate: addSpinRef.current !== addSpin ? addSpin : 0,
+              scale: isSubmitted ? 1.2 : 1,
+            }}
             transition={{ duration: 1 }}
             className="mr-2 w-5 h-5"
           >
             <LuRefreshCcw
-              className={`w-full h-full ${isSubmitted && "stroke-red-900"}`}
+              className={`w-full h-full ${isSubmitted && "stroke-red-900"} transition-all duration-300`}
             />
           </motion.div>
           Chat Mode
