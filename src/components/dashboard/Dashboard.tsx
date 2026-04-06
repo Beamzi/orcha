@@ -20,8 +20,10 @@ export default async function Dashboard({ children }: Props) {
       <ChatProvider>
         <ChatInstancesProvider chatInstances={chatInstances}>
           <GlobalHooksProvider>
-            <Sidebar className="absolute border h-full bg-neutral-800"></Sidebar>
-            <main>{children}</main>
+            <div className="flex ">
+              <Sidebar className=" "></Sidebar>
+              <main>{children}</main>
+            </div>
           </GlobalHooksProvider>
         </ChatInstancesProvider>
       </ChatProvider>
