@@ -97,7 +97,7 @@ export default function Sidebar({ className }: Props) {
           </div>
           <div className="">
             {chatInstancesClient.map((item) => (
-              <div className="flex justify-between " key={item.id}>
+              <div className="flex justify-between" key={item.id}>
                 <button
                   className={`px-2 cursor-pointer w-full justify-start text-start  ${instanceId === item.id && "bg-red-400"}`}
                   onClick={() => {

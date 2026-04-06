@@ -76,20 +76,33 @@ export default function InstanceView({}) {
   return (
     <>
       <main className="flex justify-center items-center">
-        <div className="flex items-center max-w-1/2 min-w-1/2 flex-col h-screen border">
-          <div className="flex flex-col flex-1 w-full min-h-0 px-7 overflow-y-scroll custom-scroll border p-2.5">
-            {instanceId &&
-              selectedInstance?.chatlogs?.map((obj) => chatMarkup(obj))}
-            {instanceId ? (
-              selectedChat.map((obj, index) => chatMarkup(obj))
-            ) : (
-              <div>
-                {chatHistoryClient.map(
-                  (obj) => obj.instanceId === tempInstanceId && chatMarkup(obj),
-                )}
-              </div>
-            )}
-            <div ref={bottomRef} />
+        <div className="flex items-center max-w-1/2 min-w-1/2 flex-col h-screen">
+          <div className="relative flex-1 w-full min-h-0 mb-5 mt-5">
+            {/* vignette overlays */}
+            <div
+              className="pointer-events-none absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-neutral-900 to-transparent z-10 rounded-t-xl"
+              style={{ top: "1px", left: "1px", right: "1px" }}
+            />
+            <div
+              className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-neutral-900 to-transparent z-10 rounded-b-xl"
+              style={{ bottom: "1px", left: "1px", right: "1px" }}
+            />
+
+            <div className="flex flex-col bg-neutral-900 flex-1 w-full h-full px-7 overflow-y-scroll rounded-xl border border-neutral-700 p-2.5">
+              {instanceId &&
+                selectedInstance?.chatlogs?.map((obj) => chatMarkup(obj))}
+              {instanceId ? (
+                selectedChat.map((obj, index) => chatMarkup(obj))
+              ) : (
+                <div>
+                  {chatHistoryClient.map(
+                    (obj) =>
+                      obj.instanceId === tempInstanceId && chatMarkup(obj),
+                  )}
+                </div>
+              )}
+              <div ref={bottomRef} />
+            </div>
           </div>
           <TestRenderSearch instanceId={instanceId} />
         </div>

@@ -10,11 +10,12 @@ import React, {
 import { checkHeuristics } from "@/lib/checkHeuristics";
 import { chatContext } from "@/context/chat";
 import { keywords } from "@/data/keywords";
-import { LuCircleArrowUp, LuX } from "react-icons/lu";
+import { LuCircleArrowUp, LuGlobe, LuRefreshCcw, LuX } from "react-icons/lu";
 import { ChatType } from "@/context/chat";
 import { ChatInstancesType } from "@/context/chatInstances";
 import { sessionOrchaContext } from "@/context/session";
 import { globalHooksContext } from "@/context/globalHooks";
+import { motion } from "motion/react";
 
 interface Props {
   getResult: () => Promise<void>;
@@ -55,61 +56,84 @@ export default function PromptBar({
   const userSession = sessionContext;
   const authorId = userSession.id;
 
-  // let tempId = () => Math.floor(Math.random() * 15204);
-  // let tempInstanceId = () => Date.now();
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
   return (
-    <form
-      className="h-full w-full flex justify-center px-2.5 py-2.5 border"
-      onSubmit={(e) => {
-        e.preventDefault();
-        setChatHistoryClient((prev) => [
-          ...prev,
-          {
-            id: tempId,
-            prompt: promptQuery,
-            instanceId: instanceId ? instanceId : tempInstanceId,
-          },
-        ]);
-        !instanceId &&
-          setChatInstancesClient((prev) => [
+    <section className="px-5 pt-5 mb-5 rounded-xl border bg-neutral-900 border-neutral-700">
+      <form
+        className="h-18 w-full flex justify-center p-2   border border-neutral-700 rounded-xl"
+        onSubmit={(e) => {
+          e.preventDefault();
+          setChatHistoryClient((prev) => [
             ...prev,
             {
-              id: tempInstanceId,
-              title: promptQuery,
+              id: tempId,
+              prompt: promptQuery,
+              instanceId: instanceId ? instanceId : tempInstanceId,
             },
           ]);
+          !instanceId &&
+            setChatInstancesClient((prev) => [
+              ...prev,
+              {
+                id: tempInstanceId,
+                title: promptQuery,
+              },
+            ]);
 
-        getModelDirect();
+          getModelDirect();
+          setPromptQuery("");
+          setIsSubmitted(true);
 
-        // checkHeuristics(promptQuery, keywords) === true
-        //   ? getResult()
-        //   : getModelDirect();
-      }}
-    >
-      <input
-        className="border min-h-21 w-full h-full px-5 bg-neutral-800 outline-none"
-        onChange={(e) => setPromptQuery(e.target.value)}
-        value={promptQuery}
-        placeholder="How Can I Help?"
-      ></input>
-      <div className="flex flex-col ml-2 h-full">
+          // checkHeuristics(promptQuery, keywords) === true
+          //   ? getResult()
+          //   : getModelDirect();
+        }}
+      >
+        <input
+          className=" min-h w-full h-full px-5  bg-neutral-800 outline-none rounded-md"
+          onChange={(e) => setPromptQuery(e.target.value)}
+          value={promptQuery}
+          placeholder="How Can I Help?"
+        ></input>
+        <div className="flex ml-2 h-full ">
+          <button
+            className={`p-2 ${
+              promptQuery.length > 0 ? "bg-red-400" : ""
+            } mr-2 border border-neutral-700 rounded-md cursor-pointer hover:bg-red-400 transition-all duration-300 group`}
+            type="submit"
+          >
+            <LuCircleArrowUp className="h-5 w-5 group-hover:scale-120 transition-all duration-300" />
+          </button>
+          <button
+            type="button"
+            onClick={() => setPromptQuery("")}
+            className="p-2 border border-neutral-700 rounded-md  cursor-pointer  hover:bg-red-400 transition-all duration-300 group "
+          >
+            <LuX className="w-5 h-5 group-hover:scale-120 transition-all duration-300" />
+          </button>
+        </div>
+      </form>
+      <div className="flex items-center justify-center py-3">
         <button
-          type="button"
-          onClick={() => setPromptQuery("")}
-          className="p-2 border bg-neutral-800 cursor-pointer hover:bg-teal-700 transition-all duration-300 group "
+          className={`border bg-red-400  flex p-3 mr-2 rounded-xl border-neutral-700`}
         >
-          <LuX className="w-5 h-5 group-hover:scale-120 transition-all duration-300" />
+          <motion.div
+            animate={{ rotate: isSubmitted ? 360 : 0 }}
+            transition={{ duration: 1 }}
+            className="mr-2 w-5 h-5"
+          >
+            <LuRefreshCcw
+              className={`w-full h-full ${isSubmitted && "stroke-red-900"}`}
+            />
+          </motion.div>
+          Chat Mode
         </button>
-        <button
-          className={`p-2 ${
-            promptQuery.length > 0 ? "bg-teal-700" : "bg-neutral-800"
-          }  mt-2 border cursor-pointer hover:bg-teal-500 transition-all duration-300 group`}
-          type="submit"
-        >
-          <LuCircleArrowUp className="h-5 w-5 group-hover:scale-120 transition-all duration-300" />
+        <button className="border flex p-3 ml-2 border-neutral-700 rounded-xl">
+          <LuGlobe className="mr-2 w-5 h-5" />
+          Web Search Mode
         </button>
       </div>
-    </form>
+    </section>
   );
 }

@@ -7,7 +7,7 @@ const session = await auth();
 // console.log(session);
 export default async function Home() {
   return (
-    <div className="border-">
+    <div className="">
       <InstanceView />
     </div>
   );
