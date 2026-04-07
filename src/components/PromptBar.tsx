@@ -63,7 +63,7 @@ export default function PromptBar({
   const addSpinRef = useRef(addSpin);
 
   return (
-    <section className="px-5 pt-5 mb-5 rounded-xl border bg-neutral-900 border-neutral-700">
+    <section className="px-5 pt-5 mb-5 rounded-xl border elevated-bg-grad-thin border-neutral-700">
       <form
         className="h-18 w-full flex justify-center p-2   border border-neutral-700 rounded-xl"
         onSubmit={(e) => {
@@ -99,7 +99,7 @@ export default function PromptBar({
         }}
       >
         <input
-          className=" min-h w-full h-full px-5  bg-neutral-800 outline-none rounded-md"
+          className=" min-h w-full h-full px-5   bg-neutral-800 outline-none rounded-md"
           onChange={(e) => setPromptQuery(e.target.value)}
           value={promptQuery}
           placeholder="How Can I Help?"

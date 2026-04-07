@@ -1,12 +1,19 @@
 "use client";
 
-import React, { useContext, useState } from "react";
-import { LuPanelLeftOpen, LuPanelRightOpen, LuPlus } from "react-icons/lu";
+import React, { useContext, useEffect, useState } from "react";
+import {
+  LuCirclePlus,
+  LuEllipsis,
+  LuPanelLeftOpen,
+  LuPanelRightOpen,
+  LuPlus,
+  LuSquarePlus,
+} from "react-icons/lu";
 import { motion } from "motion/react";
 import { chatInstanceContext } from "@/context/chatInstances";
 import { globalHooksContext } from "@/context/globalHooks";
 import { chatContext } from "@/context/chat";
-import { object } from "motion/react-client";
+import { object, select } from "motion/react-client";
 
 interface Props {
   className: string;
@@ -14,6 +21,10 @@ interface Props {
 
 export default function Sidebar({ className }: Props) {
   const [expandPanel, setExpandPanel] = useState(true);
+  const [openInstanceMenu, setOpenInstanceMenu] = useState(false);
+  const [activateNameField, setActivateNameField] = useState(false);
+  const [newInstanceName, setNewInstanceName] = useState("");
+  const [trueTitle, setTrueTitle] = useState("");
 
   const context = useContext(chatInstanceContext);
   if (!context) throw new Error("context not loaded");
@@ -66,10 +77,36 @@ export default function Sidebar({ className }: Props) {
     }
   }
 
+  async function renameChatInstanceAPI() {
+    setChatInstancesClient((prev) =>
+      prev.map((item) =>
+        item.id === instanceId ? { ...item, title: newInstanceName } : item,
+      ),
+    );
+    try {
+      const request = await fetch("/api/update-instance", {
+        method: "POST",
+        headers: { "Content-type": "application/json" },
+        body: JSON.stringify({ title: newInstanceName, id: instanceId }),
+      });
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  useEffect(() => {
+    if (!newInstanceName) return;
+    const timer = setTimeout(() => {
+      renameChatInstanceAPI();
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [newInstanceName]);
+
   return (
     <motion.aside
       initial={{ width: 200 }}
-      className={`${className}  bg-neutral-900 h-screen min-w-60 `}
+      className={`${className}  elevated-bg-grad-vert border border-neutral-700 rounded-xl    mt-5 ml-5 h-[calc(100vh-40px)] min-w-60 `}
       animate={{ width: expandPanel ? 200 : 50 }}
     >
       {expandPanel ? (
@@ -78,15 +115,7 @@ export default function Sidebar({ className }: Props) {
             <h3 className="">Orcha</h3>
             <div className="flex">
               <button
-                onClick={() => {
-                  setInstanceId(undefined);
-                }}
-                className="cursor-pointer mr-1"
-              >
-                <LuPlus className="w-5 h-5" />
-              </button>
-              <button
-                className=" cursor-pointer"
+                className="cursor-pointer"
                 onClick={() => {
                   setExpandPanel(expandPanel ? false : true);
                 }}
@@ -95,30 +124,97 @@ export default function Sidebar({ className }: Props) {
               </button>
             </div>
           </header>
+
+          <div className="border border-neutral-700 rounded-xl my-5">
+            <button
+              onClick={() => {
+                setInstanceId(undefined);
+              }}
+              className="cursor-pointer p-2 flex mr-2 justify-center  align-middle items-center"
+            >
+              <LuCirclePlus className="w-5 h-5 mr-2 " />
+              New Chat
+            </button>
+          </div>
           <section className="p-2 my-5 border w-full rounded-xl min-h-0 h-full flex-1 bg-neutral-900 border-neutral-700">
             <div className="">
-              {chatInstancesClient.map((item) => (
-                <div className="flex justify-between h-full" key={item.id}>
-                  <button
-                    className={` cursor-pointer w-full justify-start text-start  ${instanceId === item.id && "bg-red-400"}`}
-                    onClick={() => {
-                      setInstanceId(item.id);
-                      console.log(selectedInstance?.chatlogs);
-                    }}
+              {chatInstancesClient.map((item) => {
+                return (
+                  <div
+                    className="flex relative  justify-between h-full"
+                    key={item.id}
                   >
-                    {item.title}
-                  </button>
-                  <button
-                    className="cursor-pointer border  "
-                    onClick={() => {
-                      deleteInstanceAPI(item.id);
-                    }}
-                  >
-                    x
-                  </button>
-                  {/* {instanceId} */}
-                </div>
-              ))}
+                    {activateNameField && instanceId === item.id ? (
+                      <input
+                        autoFocus={true}
+                        placeholder={`${item.title}`}
+                        className={`cursor-pointer rounded-md p-1 mr-1 w-full justify-start text-start transition-all duration-200 ${instanceId === item.id && "bg-red-400"}`}
+                        value={newInstanceName}
+                        onChange={(e) => {
+                          setNewInstanceName(
+                            instanceId === item.id
+                              ? e.target.value
+                              : newInstanceName,
+                          );
+                        }}
+                        onClick={() => {
+                          setInstanceId(item.id);
+                          console.log(selectedInstance?.chatlogs);
+                        }}
+                      ></input>
+                    ) : (
+                      <button
+                        onClick={() => {
+                          setActivateNameField(false);
+                          setInstanceId(item.id);
+                          console.log(selectedInstance?.chatlogs);
+                        }}
+                        className={`cursor-pointer rounded-md p-1 mr-1 w-full justify-start text-start transition-all duration-200 ${instanceId === item.id && "bg-red-400"}`}
+                      >
+                        {item.title}
+                      </button>
+                    )}
+
+                    <button
+                      className={`cursor-pointer rounded-md px-1 transitional-all duration-200 ${instanceId === item.id && openInstanceMenu && "bg-red-400"} `}
+                      onClick={() => {
+                        // deleteInstanceAPI(item.id);
+                        setInstanceId(item.id);
+                        setOpenInstanceMenu(openInstanceMenu ? false : true);
+                      }}
+                    >
+                      <LuEllipsis className={`w-5 h-5 `} />
+                    </button>
+                    {instanceId === item.id && openInstanceMenu && (
+                      <div
+                        className={`absolute border  border-neutral-700 top-10 p-2 rounded-xl bg-neutral-900 z-10 -right-2`}
+                      >
+                        <ul>
+                          <li
+                            onClick={() => {
+                              setInstanceId(item.id);
+                              setActivateNameField(true);
+                              setOpenInstanceMenu(
+                                openInstanceMenu ? false : true,
+                              );
+                            }}
+                            className="hover:bg-red-400 p-2 rounded-md cursor-pointer transition-all duration-200"
+                          >
+                            Rename Chat
+                          </li>
+
+                          <li
+                            onClick={() => deleteInstanceAPI(item.id)}
+                            className="hover:bg-red-400 p-2 transition-all duration-200 rounded-md cursor-pointer"
+                          >
+                            Delete Chat
+                          </li>
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </section>
         </div>

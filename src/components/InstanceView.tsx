@@ -75,9 +75,9 @@ export default function InstanceView({}) {
   };
   return (
     <>
-      <main className="flex w-[calc(100vw-240px)] px-5 ">
+      <main className="flex w-[calc(100vw-260px)] px-5 ">
         <div className="flex items-center w-full  flex-col h-screen">
-          <div className="relative flex-1 w-full     min-h-0 mb-5 mt-5 ">
+          <div className="relative flex-1 w-full     min-h-0 mb-5 mt-5  ">
             {/* vignette overlays */}
             <div
               className="pointer-events-none absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-neutral-900 to-transparent z-10 rounded-t-xl"
@@ -87,8 +87,7 @@ export default function InstanceView({}) {
               className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-neutral-900 to-transparent z-10 rounded-b-xl"
               style={{ bottom: "1px", left: "1px", right: "1px" }}
             />
-
-            <div className="flex flex-col w-full bg-neutral-900 flex-1 w-full h-full px-7 overflow-y-scroll rounded-xl border border-neutral-700 p-2.5">
+            <div className="flex flex-col w-full elevated-bg-grad-2 flex-1 w-full h-full px-7 overflow-y-scroll rounded-xl border border-neutral-700 p-2.5">
               {instanceId &&
                 selectedInstance?.chatlogs?.map((obj) => chatMarkup(obj))}
               {instanceId ? (

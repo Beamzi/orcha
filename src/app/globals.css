@@ -10,6 +10,7 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-primary);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -22,7 +23,7 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-primary), Helvetica, sans-serif;
 }
 
 *::-webkit-scrollbar {
@@ -40,4 +41,39 @@ body {
 
 *::-webkit-scrollbar-thumb:hover {
   background: #606060;
+}
+
+.elevated-bg-grad-vert {
+  background: #000000;
+  background: linear-gradient(180deg, rgb(20, 20, 20) 0%, rgb(36, 36, 36) 100%);
+}
+
+.elevated-bg-grad-thin {
+  background: #000000;
+  background: linear-gradient(90deg, rgb(20, 20, 20) 10%, rgb(36, 36, 36) 100%);
+}
+
+.elevated-bg-grad-2 {
+  background: #000000;
+  background: linear-gradient(
+    360deg,
+    rgba(15, 15, 15, 1) 0%,
+    rgba(25, 25, 25, 1) 33%,
+    rgba(35, 35, 35, 1) 66%,
+    rgba(35, 35, 35, 1) 100%
+  );
+}
+
+.elevated-bg-grad {
+  background: #000000;
+  background: linear-gradient(29deg, rgb(20, 20, 20) 0%, rgb(49, 49, 49) 50%);
+}
+
+.bg-grad {
+  background: #575757;
+  background: radial-gradient(
+    circle,
+    rgb(22, 22, 22) 30%,
+    rgba(0, 0, 0, 1) 100%
+  );
 }
