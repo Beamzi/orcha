@@ -11,6 +11,8 @@ interface Props {
   tempInstanceId: number;
   setTempId: Dispatch<SetStateAction<number>>;
   setTempInstanceId: Dispatch<SetStateAction<number>>;
+  noChats: boolean;
+  isNoChats: (value: boolean) => void;
 }
 
 export const globalHooksContext = createContext<Props | undefined>(undefined);

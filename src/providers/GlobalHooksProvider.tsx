@@ -22,6 +22,7 @@ export default function GlobalHooksProvider({ children }: Props) {
 
   const [tempId, setTempId] = useState<number>(7898576);
   const [tempInstanceId, setTempInstanceId] = useState<number>(2534453);
+  const [noChats, isNoChats] = useState(false);
 
   return (
     <globalHooksContext.Provider
@@ -34,6 +35,8 @@ export default function GlobalHooksProvider({ children }: Props) {
         tempInstanceId,
         setTempId,
         setTempInstanceId,
+        noChats,
+        isNoChats,
       }}
     >
       {children}
