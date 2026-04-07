@@ -4,7 +4,6 @@ interface Props {
 }
 export default function OrcaIcon({ className, color }: Props) {
   // #d4d4d4
-
   return (
     <svg
       fill={`${color}`}
