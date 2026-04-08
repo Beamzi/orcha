@@ -120,7 +120,7 @@ export default function Sidebar({ className, sessiondata }: Props) {
       <section>
         {expandPanel ? (
           <div className=" w-full p-5  ">
-            <header className="flex w-full flex-1 min-h-0 border-1 p-2 justify-between  border-neutral-700 rounded-xl  bg-neutral-900 items-center">
+            <header className="flex w-full flex-1 min-h-0 border p-3 justify-between  border-neutral-700 rounded-xl  bg-neutral-900 items-center">
               <div className="flex justify-center items-center">
                 <OrcaIcon color="#f87171" className="ml-1 w-5 h-5 mr-2" />
                 <h3 className="">
@@ -139,15 +139,15 @@ export default function Sidebar({ className, sessiondata }: Props) {
               </div>
             </header>
 
-            <div className="border border-neutral-700 rounded-xl my-5">
+            <div className="border  p-2 border-neutral-700 rounded-xl my-5">
               <button
                 onClick={() => {
                   setInstanceId(undefined);
                   setIsNoChats(true);
                 }}
-                className="cursor-pointer p-2 flex mr-2 justify-center  align-middle items-center"
+                className={`cursor-pointer p-1 ${!instanceId && "bg-red-400"} transition-all duration-200  rounded-md   w-full flex mr-2 justify-left  align-middle items-center`}
               >
-                <LuCirclePlus className="w-5 h-5 mr-2 " />
+                <LuCirclePlus className="w-5 h-5 mr-2 ml-0.5 " />
                 New Chat
               </button>
             </div>

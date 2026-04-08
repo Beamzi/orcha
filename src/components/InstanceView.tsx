@@ -10,6 +10,8 @@ import remarkGfm from "remark-gfm";
 import Markdown from "react-markdown";
 import OrcaIcon from "@/svg/OrcaIcon";
 import { sessionOrchaContext } from "@/context/session";
+import { delay, motion } from "motion/react";
+import { LuRefreshCcw } from "react-icons/lu";
 
 const markdownRenderer = (response: string | null | undefined) => {
   return (
@@ -102,10 +104,31 @@ export default function InstanceView({}) {
         <div className="border-b my-5 border-neutral-700">
           <p className="my-5 text-lg text-red-400">{obj.prompt}</p>
         </div>
-        <div className="ml-2 my-5">{markdownRenderer(obj.response)}</div>
+        {!obj.response ? (
+          <motion.div
+            className="ml-2 w-5 h-5 "
+            animate={{ rotate: [0, 720] }}
+            transition={{ duration: 2 }}
+          >
+            <LuRefreshCcw className="w-full h-full stroke-neutral-300" />
+          </motion.div>
+        ) : (
+          <div className="ml-2 my-5">{markdownRenderer(obj.response)}</div>
+        )}
       </div>
     );
   };
+
+  // const chatMarkup = (obj: ChatType) => {
+  //   return (
+  //     <div key={obj.id}>
+  //       <div className="border-b my-5 border-neutral-700">
+  //         <p className="my-5 text-lg text-red-400">{obj.prompt}</p>
+  //       </div>
+  //       <div className="ml-2 my-5">{markdownRenderer(obj.response)}</div>
+  //     </div>
+  //   );
+  // };
 
   return (
     <>
@@ -114,7 +137,7 @@ export default function InstanceView({}) {
         className="flex w-[calc(100vw-260px)] px-5 "
       >
         <div className="flex  items-center w-full flex-col h-screen">
-          <div className="relative flex-1 w-full     min-h-0 mb-5 mt-5">
+          <div className="relative flex-1 w-full min-h-0 mb-5 mt-5">
             {/* vignette overlays */}
             <div
               className="pointer-events-none absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-neutral-900 to-transparent z-10 rounded-t-xl"
@@ -134,8 +157,18 @@ export default function InstanceView({}) {
                   <div className="h-full w-full">
                     {isNoChats ? (
                       <div className="flex  flex-col justify-center items-center w-full h-full">
-                        <p className="text-xl pb-2">{`Hi ${userFirstName}, shall we get started?`}</p>
-                        <OrcaIcon color="#d4d4d4" className="w-25 h-25" />
+                        <motion.p
+                          animate={{ opacity: [0, 1] }}
+                          transition={{ duration: 0.8 }}
+                          className="text-xl pb-2"
+                        >{`Hi ${userFirstName}, shall we get started?`}</motion.p>
+                        <motion.div
+                          animate={{ opacity: [0, 1] }}
+                          transition={{ duration: 0.6, delay: 0.2 }}
+                          className=""
+                        >
+                          <OrcaIcon color="#d4d4d4" className="w-25 h-25" />
+                        </motion.div>
                       </div>
                     ) : (
                       chatHistoryClient.map(
@@ -145,9 +178,8 @@ export default function InstanceView({}) {
                     )}
                   </div>
                 )}
+                <div ref={bottomRef} />
               </div>
-
-              <div ref={bottomRef} />
             </div>
           </div>
           <TestRenderSearch instanceId={instanceId} />

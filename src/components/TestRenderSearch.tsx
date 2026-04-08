@@ -15,6 +15,10 @@ import { sessionOrchaContext } from "@/context/session";
 import { User } from "next-auth";
 import { globalHooksContext } from "@/context/globalHooks";
 import { select } from "motion/react-client";
+import ollama from "ollama/browser";
+import { flushSync } from "react-dom";
+
+// import ollama from 'ollama'
 
 interface resultProps {
   title: string;
@@ -116,11 +120,11 @@ export default function TestRenderSearch({ instanceId }: Props) {
       ?.map((chat) => [
         {
           role: "user",
-          content: chat.prompt,
+          content: chat.prompt ?? "",
         },
         {
           role: "assistant",
-          content: chat.response,
+          content: chat.response ?? "",
         },
       ])
       .flat();
@@ -128,11 +132,11 @@ export default function TestRenderSearch({ instanceId }: Props) {
       ?.map((chat) => [
         {
           role: "user",
-          content: chat.prompt,
+          content: chat.prompt ?? "",
         },
         {
           role: "assistant",
-          content: chat.response,
+          content: chat.response ?? "",
         },
       ])
       .flat();
@@ -155,40 +159,76 @@ export default function TestRenderSearch({ instanceId }: Props) {
       (instance) => instance.id === instanceId,
     );
     try {
-      console.log(
-        transformChatlogs(selectedInstance, filteredChatsByInstance),
-        "!!!!THIS IS TRANFORMEDCHATLOGS BEFORE REQUEST!!!!",
-      );
-      const request = await fetch("http://localhost:11434/api/chat", {
-        method: "POST",
-        headers: { "Content-type": "applicatioin/json" },
-        body: JSON.stringify({
-          model: "gemma3:1b",
-          messages: [
-            ...(transformChatlogs(selectedInstance, filteredChatsByInstance) ??
-              []),
-            { role: "user", content: promptQuery },
-          ],
-          stream: false,
-        }),
+      const stream = await ollama.chat({
+        model: "gemma3:1b",
+        messages: [
+          ...(transformChatlogs(selectedInstance, filteredChatsByInstance) ??
+            []),
+          { role: "user", content: promptQuery },
+        ],
+        stream: true,
       });
 
-      const response = await request.json();
+      let fullResponse = "";
 
-      // console.log(response, "!!!!!THIS IS THE CONTEXT RESPONSE!!!!");
+      for await (const part of stream) {
+        fullResponse += part.message.content;
+        setChatHistoryClient((prev) =>
+          prev.map((item) =>
+            item.instanceId === tempInstanceId
+              ? { ...item, response: fullResponse }
+              : item,
+          ),
+        );
+      }
 
-      setModelDirect(response.message.content);
-
-      //this is where an instance is creaded OR an addition to the chatlog of an instance by ID
       if (instanceId) {
-        createChat(instanceId, response.message.content);
+        createChat(instanceId, fullResponse);
       } else {
-        createInstance(response.message.content);
+        createInstance(fullResponse);
       }
     } catch (e) {
       console.error(e);
     }
   }
+
+  // async function getChatWithContextTest() {
+  //   const filteredChatsByInstance = chatHistoryClient.filter(
+  //     (chat) => chat.instanceId === instanceId,
+  //   );
+
+  //   const selectedInstance = chatInstancesClient.find(
+  //     (instance) => instance.id === instanceId,
+  //   );
+  //   try {
+  //     const request = await fetch("http://localhost:11434/api/chat", {
+  //       method: "POST",
+  //       headers: { "Content-type": "applicatioin/json" },
+  //       body: JSON.stringify({
+  //         model: "gemma3:1b",
+  //         messages: [
+  //           ...(transformChatlogs(selectedInstance, filteredChatsByInstance) ??
+  //             []),
+  //           { role: "user", content: promptQuery },
+  //         ],
+  //         stream: false,
+  //       }),
+  //     });
+
+  //     const response = await request.json();
+
+  //     setModelDirect(response.message.content);
+
+  //     //this is where an instance is creaded OR an addition to the chatlog of an instance by ID
+  //     if (instanceId) {
+  //       createChat(instanceId, response.message.content);
+  //     } else {
+  //       createInstance(response.message.content);
+  //     }
+  //   } catch (e) {
+  //     console.error(e);
+  //   }
+  // }
 
   async function getModelDirect() {
     try {
