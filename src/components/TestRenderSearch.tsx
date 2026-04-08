@@ -137,7 +137,13 @@ export default function TestRenderSearch({ instanceId }: Props) {
       ])
       .flat();
 
-    return [...(server ?? []), ...(client ?? [])];
+    let merge = [...(server ?? []), ...(client ?? [])];
+
+    if (merge.length > 20) {
+      merge = merge.slice(-20);
+    }
+
+    return merge;
   };
 
   async function getChatWithContextTest() {

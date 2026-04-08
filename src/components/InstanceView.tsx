@@ -7,9 +7,9 @@ import TestRenderSearch from "./TestRenderSearch";
 import { chatContext, ChatType } from "@/context/chat";
 import remarkGfm from "remark-gfm";
 
-import { createRoot } from "react-dom/client";
 import Markdown from "react-markdown";
 import OrcaIcon from "@/svg/OrcaIcon";
+import { sessionOrchaContext } from "@/context/session";
 
 const markdownRenderer = (response: string | null | undefined) => {
   return (
@@ -35,6 +35,22 @@ const markdownRenderer = (response: string | null | undefined) => {
   );
 };
 
+async function warmUpRequest() {
+  try {
+    const request = await fetch("http://localhost:11434/api/generate", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        model: "gemma3:1b",
+        prompt: "getting warmer",
+        stream: false,
+      }),
+    });
+  } catch (e) {
+    console.error(e);
+  }
+}
+
 export default function InstanceView({}) {
   const context = useContext(chatInstanceContext);
   if (!context) throw new Error("context not loaded");
@@ -48,14 +64,19 @@ export default function InstanceView({}) {
     setInstanceId,
     tempId,
     tempInstanceId,
-    noChats,
     isNoChats,
+    setIsNoChats,
   } = globalHooks;
 
   const chatHistoryContext = useContext(chatContext);
   if (!chatHistoryContext) throw new Error("context not loaded");
 
   const { chatHistoryClient, setChatHistoryClient } = chatHistoryContext;
+
+  const usersession = useContext(sessionOrchaContext);
+  if (!usersession) throw new Error("session invalid");
+
+  const userFirstName = usersession?.name?.split(" ").shift();
 
   const selectedInstance = chatInstancesClient.find(
     (instance) => instance.id === instanceId,
@@ -70,6 +91,10 @@ export default function InstanceView({}) {
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [chatHistoryClient, selectedInstance?.chatlogs]);
+
+  useEffect(() => {
+    warmUpRequest();
+  }, []);
 
   const chatMarkup = (obj: ChatType) => {
     return (
@@ -100,27 +125,27 @@ export default function InstanceView({}) {
               style={{ bottom: "1px", left: "1px", right: "1px" }}
             />
             <div className="flex flex-col elevated-bg-grad-thin flex-1 w-full h-full px-7 overflow-y-scroll rounded-xl border border-neutral-700 p-2.5">
-              {noChats ? (
-                <div className="flex flex-col justify-center items-center w-full h-full">
-                  <p>{"Hello Name, what shall we do today?"}</p>
-                  <OrcaIcon color="#d4d4d4" className="w-50 h-50" />
-                </div>
-              ) : (
-                <div>
-                  {instanceId &&
-                    selectedInstance?.chatlogs?.map((obj) => chatMarkup(obj))}
-                  {instanceId ? (
-                    selectedChat.map((obj, index) => chatMarkup(obj))
-                  ) : (
-                    <div>
-                      {chatHistoryClient.map(
+              <div className="h-full w-full">
+                {instanceId &&
+                  selectedInstance?.chatlogs?.map((obj) => chatMarkup(obj))}
+                {instanceId ? (
+                  selectedChat.map((obj, index) => chatMarkup(obj))
+                ) : (
+                  <div className="h-full w-full">
+                    {isNoChats ? (
+                      <div className="flex  flex-col justify-center items-center w-full h-full">
+                        <p className="text-xl pb-2">{`Hi ${userFirstName}, shall we get started?`}</p>
+                        <OrcaIcon color="#d4d4d4" className="w-25 h-25" />
+                      </div>
+                    ) : (
+                      chatHistoryClient.map(
                         (obj) =>
                           obj.instanceId === tempInstanceId && chatMarkup(obj),
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
+                      )
+                    )}
+                  </div>
+                )}
+              </div>
 
               <div ref={bottomRef} />
             </div>

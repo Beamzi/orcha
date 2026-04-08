@@ -55,8 +55,8 @@ export default function Sidebar({ className, sessiondata }: Props) {
     tempInstanceId,
     setTempId,
     setTempInstanceId,
-    noChats,
     isNoChats,
+    setIsNoChats,
   } = globalHooks;
 
   const selectedInstance = chatInstancesClient.find(
@@ -143,7 +143,7 @@ export default function Sidebar({ className, sessiondata }: Props) {
               <button
                 onClick={() => {
                   setInstanceId(undefined);
-                  isNoChats(true);
+                  setIsNoChats(true);
                 }}
                 className="cursor-pointer p-2 flex mr-2 justify-center  align-middle items-center"
               >
@@ -156,7 +156,7 @@ export default function Sidebar({ className, sessiondata }: Props) {
                 {chatInstancesClient.map((item) => {
                   return (
                     <div
-                      className="flex relative  justify-between h-full"
+                      className="flex relative justify-between h-full"
                       key={item.id}
                     >
                       {activateNameField && instanceId === item.id ? (
@@ -180,7 +180,7 @@ export default function Sidebar({ className, sessiondata }: Props) {
                       ) : (
                         <button
                           onClick={() => {
-                            isNoChats(false);
+                            setIsNoChats(false);
                             setActivateNameField(false);
                             setInstanceId(item.id);
                             console.log(selectedInstance?.chatlogs);
@@ -194,7 +194,7 @@ export default function Sidebar({ className, sessiondata }: Props) {
                       <button
                         className={`cursor-pointer rounded-md px-1 transitional-all duration-200 ${instanceId === item.id && openInstanceMenu && "bg-red-400"} `}
                         onClick={() => {
-                          isNoChats(false);
+                          setIsNoChats(false);
 
                           // deleteInstanceAPI(item.id);
                           setInstanceId(item.id);
@@ -210,8 +210,7 @@ export default function Sidebar({ className, sessiondata }: Props) {
                           <ul>
                             <li
                               onClick={() => {
-                                isNoChats(false);
-
+                                setIsNoChats(false);
                                 setInstanceId(item.id);
                                 setActivateNameField(true);
                                 setOpenInstanceMenu(
@@ -224,7 +223,14 @@ export default function Sidebar({ className, sessiondata }: Props) {
                             </li>
 
                             <li
-                              onClick={() => deleteInstanceAPI(item.id)}
+                              onClick={() => {
+                                setInstanceId(undefined);
+                                setOpenInstanceMenu(
+                                  openInstanceMenu ? false : true,
+                                );
+                                deleteInstanceAPI(item.id);
+                                setIsNoChats(true);
+                              }}
                               className="hover:bg-red-400 p-2 transition-all duration-200 rounded-md cursor-pointer"
                             >
                               Delete Chat

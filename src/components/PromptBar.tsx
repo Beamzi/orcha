@@ -61,6 +61,12 @@ export default function PromptBar({
 
   const [isSubmitted, setIsSubmitted] = useState(false);
 
+  const globalHooks = useContext(globalHooksContext);
+
+  if (!globalHooks) throw new Error("globalhooks not loaded");
+
+  const { isNoChats, setIsNoChats } = globalHooks;
+
   const [addSpin, setAddSpin] = useState(0);
   const addSpinRef = useRef(addSpin);
 
@@ -91,6 +97,7 @@ export default function PromptBar({
           getChatWithContextTest();
           setPromptQuery("");
           setIsSubmitted(true);
+          setIsNoChats(false);
 
           setAddSpin((prev) => (prev += 360));
 
