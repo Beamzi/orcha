@@ -81,9 +81,13 @@ export default function InstanceView({}) {
       </div>
     );
   };
+
   return (
     <>
-      <main className="flex w-[calc(100vw-260px)] px-5 ">
+      <main
+        onClick={() => console.log(selectedInstance)}
+        className="flex w-[calc(100vw-260px)] px-5 "
+      >
         <div className="flex  items-center w-full flex-col h-screen">
           <div className="relative flex-1 w-full     min-h-0 mb-5 mt-5">
             {/* vignette overlays */}

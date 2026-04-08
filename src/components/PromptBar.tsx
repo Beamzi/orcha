@@ -21,6 +21,7 @@ import { motion } from "motion/react";
 interface Props {
   getResult: () => Promise<void>;
   getModelDirect: () => Promise<void>;
+  getChatWithContextTest: () => Promise<void>;
   promptQuery: string;
   setPromptQuery: (value: string) => void;
   instanceId: number | undefined;
@@ -34,6 +35,7 @@ interface Props {
 export default function PromptBar({
   getResult,
   getModelDirect,
+  getChatWithContextTest,
   promptQuery,
   setPromptQuery,
   instanceId,
@@ -85,7 +87,8 @@ export default function PromptBar({
               },
             ]);
 
-          getModelDirect();
+          // getModelDirect();
+          getChatWithContextTest();
           setPromptQuery("");
           setIsSubmitted(true);
 

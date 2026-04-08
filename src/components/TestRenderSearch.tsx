@@ -5,12 +5,16 @@ import {
   useEffect,
   useState,
 } from "react";
-import { chatContext } from "@/context/chat";
+import { chatContext, ChatType } from "@/context/chat";
 import PromptBar from "./PromptBar";
-import { chatInstanceContext } from "@/context/chatInstances";
+import {
+  chatInstanceContext,
+  ChatInstancesType,
+} from "@/context/chatInstances";
 import { sessionOrchaContext } from "@/context/session";
 import { User } from "next-auth";
 import { globalHooksContext } from "@/context/globalHooks";
+import { select } from "motion/react-client";
 
 interface resultProps {
   title: string;
@@ -54,18 +58,11 @@ export default function TestRenderSearch({ instanceId }: Props) {
     setInstanceId: setSelectedInstanceId,
   } = globalHooks;
 
-  // const [tempId, setTempId] = useState<number>(0);
-  // const [tempInstanceId, setTempInstanceId] = useState(0);
-
   const instanceContext = useContext(chatInstanceContext);
 
   if (!instanceContext) throw new Error("instance content not loaded");
 
   const { chatInstancesClient, setChatInstancesClient } = instanceContext;
-
-  const selectedInstance = chatInstancesClient.find(
-    (instance) => instance.id === instanceId,
-  );
 
   async function getResult() {
     try {
@@ -106,6 +103,82 @@ export default function TestRenderSearch({ instanceId }: Props) {
       const response = await request.json();
 
       setModelSearchSum(response.response);
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  const transformChatlogs = (
+    selectedInstance: ChatInstancesType | undefined,
+    filteredChatsByInstance: ChatType[] | undefined,
+  ) => {
+    const server = selectedInstance?.chatlogs
+      ?.map((chat) => [
+        {
+          role: "user",
+          content: chat.prompt,
+        },
+        {
+          role: "assistant",
+          content: chat.response,
+        },
+      ])
+      .flat();
+    const client = filteredChatsByInstance
+      ?.map((chat) => [
+        {
+          role: "user",
+          content: chat.prompt,
+        },
+        {
+          role: "assistant",
+          content: chat.response,
+        },
+      ])
+      .flat();
+
+    return [...(server ?? []), ...(client ?? [])];
+  };
+
+  async function getChatWithContextTest() {
+    const filteredChatsByInstance = chatHistoryClient.filter(
+      (chat) => chat.instanceId === instanceId,
+    );
+
+    const selectedInstance = chatInstancesClient.find(
+      (instance) => instance.id === instanceId,
+    );
+    try {
+      console.log(
+        transformChatlogs(selectedInstance, filteredChatsByInstance),
+        "!!!!THIS IS TRANFORMEDCHATLOGS BEFORE REQUEST!!!!",
+      );
+      const request = await fetch("http://localhost:11434/api/chat", {
+        method: "POST",
+        headers: { "Content-type": "applicatioin/json" },
+        body: JSON.stringify({
+          model: "gemma3:1b",
+          messages: [
+            ...(transformChatlogs(selectedInstance, filteredChatsByInstance) ??
+              []),
+            { role: "user", content: promptQuery },
+          ],
+          stream: false,
+        }),
+      });
+
+      const response = await request.json();
+
+      // console.log(response, "!!!!!THIS IS THE CONTEXT RESPONSE!!!!");
+
+      setModelDirect(response.message.content);
+
+      //this is where an instance is creaded OR an addition to the chatlog of an instance by ID
+      if (instanceId) {
+        createChat(instanceId, response.message.content);
+      } else {
+        createInstance(response.message.content);
+      }
     } catch (e) {
       console.error(e);
     }
@@ -235,6 +308,7 @@ export default function TestRenderSearch({ instanceId }: Props) {
       <PromptBar
         getResult={getResult}
         getModelDirect={getModelDirect}
+        getChatWithContextTest={getChatWithContextTest}
         promptQuery={promptQuery}
         setPromptQuery={setPromptQuery}
         instanceId={instanceId}
