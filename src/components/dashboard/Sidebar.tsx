@@ -57,11 +57,22 @@ export default function Sidebar({ className, sessiondata }: Props) {
     setTempInstanceId,
     isNoChats,
     setIsNoChats,
+    isWebSearchMode,
+    webModeSwitch,
+    setWebModeSwitch,
   } = globalHooks;
 
   const selectedInstance = chatInstancesClient.find(
     (instance) => instance.id === instanceId,
   );
+
+  const switches = chatInstancesClient
+    .map((instance) => [{ instanceIdForWeb: instance.id, isWebInUse: false }])
+    .flat();
+
+  useEffect(() => {
+    setWebModeSwitch(switches);
+  }, []);
 
   async function deleteInstanceAPI(instanceId: number) {
     setChatInstancesClient((prev) =>
@@ -120,7 +131,7 @@ export default function Sidebar({ className, sessiondata }: Props) {
       <section>
         {expandPanel ? (
           <div className=" w-full p-5  ">
-            <header className="flex w-full flex-1 min-h-0 border p-3 justify-between  border-neutral-700 rounded-xl  bg-neutral-900 items-center">
+            <header className="flex w-full flex-1 min-h- border p-3 justify-between  border-neutral-700 rounded-xl  bg-neutral-900 items-center">
               <div className="flex justify-center items-center">
                 <OrcaIcon color="#f87171" className="ml-1 w-5 h-5 mr-2" />
                 <h3 className="">
@@ -138,7 +149,6 @@ export default function Sidebar({ className, sessiondata }: Props) {
                 </button>
               </div>
             </header>
-
             <div className="border  p-2 border-neutral-700 rounded-xl my-5">
               <button
                 onClick={() => {
@@ -174,6 +184,7 @@ export default function Sidebar({ className, sessiondata }: Props) {
                           }}
                           onClick={() => {
                             setInstanceId(item.id);
+
                             console.log(selectedInstance?.chatlogs);
                           }}
                         ></input>
@@ -183,7 +194,6 @@ export default function Sidebar({ className, sessiondata }: Props) {
                             setIsNoChats(false);
                             setActivateNameField(false);
                             setInstanceId(item.id);
-                            console.log(selectedInstance?.chatlogs);
                           }}
                           className={`cursor-pointer rounded-md p-1 mr-1 w-full justify-start text-start transition-all duration-200 ${instanceId === item.id && "bg-red-400"}`}
                         >

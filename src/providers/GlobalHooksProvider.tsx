@@ -3,6 +3,7 @@
 import React, { ReactNode, useState } from "react";
 
 import { globalHooksContext } from "@/context/globalHooks";
+import { WebSearchResultType, WebModeSwitchType } from "@/context/globalHooks";
 
 interface Props {
   children: ReactNode;
@@ -10,8 +11,15 @@ interface Props {
 
 export default function GlobalHooksProvider({ children }: Props) {
   const [instanceId, setInstanceId] = useState<number | undefined>(undefined);
-
   const [forceInstance, setForceInstance] = useState(false);
+  const [tempId, setTempId] = useState<number>(7898576);
+  const [tempInstanceId, setTempInstanceId] = useState<number>(2534453);
+  const [isNoChats, setIsNoChats] = useState(true);
+  const [isWebSearchMode, setIsWebSearchMode] = useState(false);
+  const [webSearchResult, setwebSearchResult] = useState<WebSearchResultType[]>(
+    [],
+  );
+  const [webModeSwitch, setWebModeSwitch] = useState<WebModeSwitchType[]>([]);
 
   // const [tempId, setTempId] = useState<number>(() =>
   //   Math.floor(Math.random() * 15204),
@@ -19,10 +27,6 @@ export default function GlobalHooksProvider({ children }: Props) {
   // const [tempInstanceId, setTempInstanceId] = useState<number>(() =>
   //   Date.now(),
   // );
-
-  const [tempId, setTempId] = useState<number>(7898576);
-  const [tempInstanceId, setTempInstanceId] = useState<number>(2534453);
-  const [isNoChats, setIsNoChats] = useState(true);
 
   return (
     <globalHooksContext.Provider
@@ -37,6 +41,12 @@ export default function GlobalHooksProvider({ children }: Props) {
         setTempInstanceId,
         isNoChats,
         setIsNoChats,
+        isWebSearchMode,
+        setIsWebSearchMode,
+        webSearchResult,
+        setwebSearchResult,
+        webModeSwitch,
+        setWebModeSwitch,
       }}
     >
       {children}

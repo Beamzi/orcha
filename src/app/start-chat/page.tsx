@@ -1,6 +1,6 @@
 "use client";
 import PromptBar from "@/components/PromptBar";
-import TestRenderSearch from "@/components/TestRenderSearch";
+import TestRenderSearch from "@/components/CoreRequestChain";
 import React, { useState } from "react";
 
 export default function StartChat() {

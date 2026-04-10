@@ -1,6 +1,7 @@
 "use client";
 import {
-  unstable_startGestureTransition,
+  Dispatch,
+  SetStateAction,
   useContext,
   useEffect,
   useState,
@@ -12,24 +13,18 @@ import {
   ChatInstancesType,
 } from "@/context/chatInstances";
 import { sessionOrchaContext } from "@/context/session";
-import { User } from "next-auth";
 import { globalHooksContext } from "@/context/globalHooks";
-import { select } from "motion/react-client";
 import ollama from "ollama/browser";
-import { flushSync } from "react-dom";
-
-// import ollama from 'ollama'
 
 interface resultProps {
   title: string;
   url: string;
 }
-
 interface Props {
   instanceId: number | undefined;
 }
 
-export default function TestRenderSearch({ instanceId }: Props) {
+export default function CoreRequestChain({ instanceId }: Props) {
   const [promptQuery, setPromptQuery] = useState("");
   const [searchResult, setSearchResult] = useState<resultProps[]>([]);
   const [promptInject, setPromptInject] = useState("");
@@ -58,6 +53,10 @@ export default function TestRenderSearch({ instanceId }: Props) {
     tempInstanceId,
     setTempId,
     setTempInstanceId,
+    webSearchResult,
+    setwebSearchResult,
+    webModeSwitch,
+    setWebModeSwitch,
 
     setInstanceId: setSelectedInstanceId,
   } = globalHooks;
@@ -68,7 +67,7 @@ export default function TestRenderSearch({ instanceId }: Props) {
 
   const { chatInstancesClient, setChatInstancesClient } = instanceContext;
 
-  async function getResult() {
+  async function getWebSearch() {
     try {
       let request = await fetch("/api/get-search", {
         method: "POST",
@@ -81,14 +80,73 @@ export default function TestRenderSearch({ instanceId }: Props) {
       const jsonResponseString = JSON.stringify(
         response.searchResponse.web.results,
       );
+
+      const rawSearchResult = response.searchResponse.web.results;
+
+      console.log(response);
+
       setPromptInject(jsonResponseString);
       setSearchResult(response.searchResponse.web.results);
-      setIsPromptReady(true);
-      setTimeout(() => {
-        setIsPromptReady(false);
-      }, 10);
+
+      // setSearchResult((prev) => []);
+      setwebSearchResult(response.searchResponse.web.results);
+
+      // console.log(searchResult);
+
+      getWebSearchWithContext(jsonResponseString);
+
+      // setIsPromptReady(true);
+      // setTimeout(() => {
+      //   setIsPromptReady(false);
+      // }, 10);
     } catch (e) {
       // console.error(e);
+    }
+  }
+
+  async function getWebSearchWithContext(promptInject?: string) {
+    const filteredChatsByInstance = chatHistoryClient.filter(
+      (chat) => chat.instanceId === instanceId,
+    );
+    const selectedInstance = chatInstancesClient.find(
+      (instance) => instance.id === instanceId,
+    );
+    try {
+      const stream = await ollama.chat({
+        model: "gemma3:1b",
+        messages: [
+          ...(transformChatlogs(selectedInstance, filteredChatsByInstance) ??
+            []),
+          {
+            role: "user",
+            content: `You are a helpful Assistant, Summarise the following search results, ${promptInject}`,
+          },
+          // { role: "user", content: promptQuery },
+        ],
+        stream: true,
+      });
+
+      let fullResponse = "";
+
+      for await (const part of stream) {
+        fullResponse += part.message.content;
+        setChatHistoryClient((prev) =>
+          prev.map((item) =>
+            item.instanceId === tempInstanceId
+              ? { ...item, response: fullResponse }
+              : item,
+          ),
+        );
+      }
+
+      //this is where an instance is created OR an addition to the chatlog of an instance by ID
+      if (instanceId) {
+        createChat(instanceId, fullResponse);
+      } else {
+        createInstance(fullResponse);
+      }
+    } catch (e) {
+      console.error(e);
     }
   }
 
@@ -150,11 +208,10 @@ export default function TestRenderSearch({ instanceId }: Props) {
     return merge;
   };
 
-  async function getChatWithContextTest() {
+  async function getChatWithContext() {
     const filteredChatsByInstance = chatHistoryClient.filter(
       (chat) => chat.instanceId === instanceId,
     );
-
     const selectedInstance = chatInstancesClient.find(
       (instance) => instance.id === instanceId,
     );
@@ -181,7 +238,7 @@ export default function TestRenderSearch({ instanceId }: Props) {
           ),
         );
       }
-
+      //this is where an instance is created OR an addition to the chatlog of an instance by ID
       if (instanceId) {
         createChat(instanceId, fullResponse);
       } else {
@@ -191,44 +248,6 @@ export default function TestRenderSearch({ instanceId }: Props) {
       console.error(e);
     }
   }
-
-  // async function getChatWithContextTest() {
-  //   const filteredChatsByInstance = chatHistoryClient.filter(
-  //     (chat) => chat.instanceId === instanceId,
-  //   );
-
-  //   const selectedInstance = chatInstancesClient.find(
-  //     (instance) => instance.id === instanceId,
-  //   );
-  //   try {
-  //     const request = await fetch("http://localhost:11434/api/chat", {
-  //       method: "POST",
-  //       headers: { "Content-type": "applicatioin/json" },
-  //       body: JSON.stringify({
-  //         model: "gemma3:1b",
-  //         messages: [
-  //           ...(transformChatlogs(selectedInstance, filteredChatsByInstance) ??
-  //             []),
-  //           { role: "user", content: promptQuery },
-  //         ],
-  //         stream: false,
-  //       }),
-  //     });
-
-  //     const response = await request.json();
-
-  //     setModelDirect(response.message.content);
-
-  //     //this is where an instance is creaded OR an addition to the chatlog of an instance by ID
-  //     if (instanceId) {
-  //       createChat(instanceId, response.message.content);
-  //     } else {
-  //       createInstance(response.message.content);
-  //     }
-  //   } catch (e) {
-  //     console.error(e);
-  //   }
-  // }
 
   async function getModelDirect() {
     try {
@@ -245,7 +264,6 @@ export default function TestRenderSearch({ instanceId }: Props) {
       const response = await request.json();
       setModelDirect(response.response);
 
-      //this is where an instance is creaded OR an addition to the chatlog of an instance by ID
       if (instanceId) {
         createChat(instanceId, response.response);
       } else {
@@ -272,7 +290,6 @@ export default function TestRenderSearch({ instanceId }: Props) {
         }),
       });
       const response = await request.json();
-      // console.log({ response });
 
       setChatInstancesClient((prev) =>
         prev.map((item) =>
@@ -303,13 +320,12 @@ export default function TestRenderSearch({ instanceId }: Props) {
 
       setSelectedInstanceId(response.prismaResponse.id);
 
-      // console.log(response.prismaResponse.id, "response.prismaResponse.id");
-
       return response;
     } catch (e) {
       console.error(e);
     }
   }
+
   async function createChat(instanceId: number, modelResponse: string) {
     try {
       const request = await fetch("/api/create-chat", {
@@ -349,18 +365,23 @@ export default function TestRenderSearch({ instanceId }: Props) {
     }
   }, [isPromptReady]);
 
+  // useEffect(() => {
+  //   if (instanceId !== undefined) {
+  //     setInstanceMatch(instanceId);
+  //   }
+  // }, [instanceId]);
+
   return (
     <div className="w-full">
       <PromptBar
-        getResult={getResult}
+        getWebSearch={getWebSearch}
+        // getWebSearchWithContext={getWebSearchWithContext}
         getModelDirect={getModelDirect}
-        getChatWithContextTest={getChatWithContextTest}
+        getChatWithContext={getChatWithContext}
         promptQuery={promptQuery}
         setPromptQuery={setPromptQuery}
         instanceId={instanceId}
         tempId={tempId}
-        setTempId={setTempId}
-        setTempInstanceId={setTempInstanceId}
         tempInstanceId={tempInstanceId}
         setChatInstancesClient={setChatInstancesClient}
       />

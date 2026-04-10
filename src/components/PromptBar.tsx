@@ -17,31 +17,28 @@ import { ChatInstancesType } from "@/context/chatInstances";
 import { sessionOrchaContext } from "@/context/session";
 import { globalHooksContext } from "@/context/globalHooks";
 import { motion } from "motion/react";
+import { map } from "motion/react-client";
 
 interface Props {
-  getResult: () => Promise<void>;
+  getWebSearch: () => Promise<void>;
   getModelDirect: () => Promise<void>;
-  getChatWithContextTest: () => Promise<void>;
+  getChatWithContext: () => Promise<void>;
   promptQuery: string;
   setPromptQuery: (value: string) => void;
   instanceId: number | undefined;
   tempId: number;
-  setTempId: Dispatch<SetStateAction<number>>;
-  setTempInstanceId: Dispatch<SetStateAction<number>>;
   tempInstanceId: number;
   setChatInstancesClient: Dispatch<SetStateAction<ChatInstancesType[]>>;
 }
 
 export default function PromptBar({
-  getResult,
+  getWebSearch,
   getModelDirect,
-  getChatWithContextTest,
+  getChatWithContext,
   promptQuery,
   setPromptQuery,
   instanceId,
   tempId,
-  setTempId,
-  setTempInstanceId,
   tempInstanceId,
   setChatInstancesClient,
 }: Props) {
@@ -65,7 +62,15 @@ export default function PromptBar({
 
   if (!globalHooks) throw new Error("globalhooks not loaded");
 
-  const { isNoChats, setIsNoChats } = globalHooks;
+  const {
+    isNoChats,
+    setIsNoChats,
+    isWebSearchMode,
+    setIsWebSearchMode,
+    webModeSwitch,
+    setWebModeSwitch,
+    instanceId: selectedInstanceId,
+  } = globalHooks;
 
   const [addSpin, setAddSpin] = useState(0);
   const addSpinRef = useRef(addSpin);
@@ -93,8 +98,13 @@ export default function PromptBar({
               },
             ]);
 
+          if (isWebSearchMode) {
+            getWebSearch();
+          } else {
+            getChatWithContext();
+          }
+
           // getModelDirect();
-          getChatWithContextTest();
           setPromptQuery("");
           setIsSubmitted(true);
           setIsNoChats(false);
@@ -134,7 +144,7 @@ export default function PromptBar({
       </form>
       <div className="flex items-center justify-center py-3">
         <button
-          className={`border bg-red-400  flex p-3 mr-2 rounded-xl border-neutral-700`}
+          className={`border bg-red-400 cursor-pointer flex p-3 mr-2 rounded-xl border-neutral-700`}
         >
           <motion.div
             animate={{
@@ -150,7 +160,19 @@ export default function PromptBar({
           </motion.div>
           Chat Mode
         </button>
-        <button className="border flex p-3 ml-2 border-neutral-700 rounded-xl">
+        <button
+          onClick={() => {
+            setIsWebSearchMode(isWebSearchMode ? false : true);
+            setWebModeSwitch((prev) =>
+              prev.map((item) =>
+                item.instanceIdForWeb === selectedInstanceId
+                  ? { ...item, isWebInUse: item.isWebInUse ? false : true }
+                  : item,
+              ),
+            );
+          }}
+          className={`cursor-pointer border flex p-3 ml-2 border-neutral-700 rounded-xl ${isWebSearchMode && "bg-red-400"}`}
+        >
           <LuGlobe className="mr-2 w-5 h-5" />
           Web Search Mode
         </button>
