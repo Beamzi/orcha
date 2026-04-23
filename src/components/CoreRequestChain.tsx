@@ -55,6 +55,7 @@ export default function CoreRequestChain({ instanceId }: Props) {
     setTempInstanceId,
     webSearchResult,
     setwebSearchResult,
+    isWebSearchMode,
     webModeSwitch,
     setWebModeSwitch,
 
@@ -305,6 +306,14 @@ export default function CoreRequestChain({ instanceId }: Props) {
         ),
       );
 
+      setWebModeSwitch((prev) => [
+        ...prev,
+        {
+          instanceIdForWeb: response.prismaResponse.id,
+          isWebInUse: isWebSearchMode,
+        },
+      ]);
+
       setChatHistoryClient((prev) =>
         prev.map((item) =>
           item.id === tempId
@@ -340,13 +349,14 @@ export default function CoreRequestChain({ instanceId }: Props) {
         }),
       });
       const response = await request.json();
-      // console.log({ response });
+      console.log({ response });
       setChatHistoryClient((prev) =>
         prev.map((item) =>
           item.id === tempId
             ? {
                 ...item,
                 id: response.prismaResponse.id,
+                instanceId: response.prismaResponse.instanceId,
                 response: modelResponse,
               }
             : item,

@@ -1,7 +1,7 @@
 "use client";
 
 import { chatInstanceContext } from "@/context/chatInstances";
-import { globalHooksContext } from "@/context/globalHooks";
+import { globalHooksContext, WebSearchResultType } from "@/context/globalHooks";
 import React, { useContext, useEffect, useRef, useState } from "react";
 import TestRenderSearch from "./CoreRequestChain";
 import { chatContext, ChatType } from "@/context/chat";
@@ -94,6 +94,10 @@ export default function InstanceView({}) {
     (instance) => instance.instanceId === instanceId,
   );
 
+  const streamingChat = chatHistoryClient.filter(
+    (chat) => chat.instanceId === tempInstanceId,
+  );
+
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -107,6 +111,40 @@ export default function InstanceView({}) {
   const currentSwitch = webModeSwitch.find(
     (instance) => instance.instanceIdForWeb === instanceId,
   );
+
+  const searchResultMarkup = (obj: WebSearchResultType) => {
+    return (
+      <div className="flex-col border-b m-7 border-neutral-700" key={obj.title}>
+        <div className="flex items-start">
+          <img
+            className="mr-2 rounded-lg border-neutral-700 bg-neutral-300 h-10 border-2 min-w-10"
+            src={obj.profile.img}
+          />
+          <div className="-mt-1">
+            <h3 className="border-b border-neutral-700 pb-2">{obj.title}</h3>
+            <div className="flex items-top ">
+              <div
+                className="py-2"
+                dangerouslySetInnerHTML={{
+                  __html: `${obj.description}`,
+                }}
+              ></div>
+              {obj.thumbnail && (
+                <div className="flex-col mt-3 ml-5">
+                  <img
+                    style={{ objectFit: "cover" }}
+                    className="min-h-20 min-w-30  rounded-lg border border-neutral-700 "
+                    src={obj.thumbnail?.src}
+                  ></img>
+                  <p className="pt-1 text-right">{obj.profile.name}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   const chatMarkup = (obj: ChatType) => {
     return (
@@ -131,10 +169,7 @@ export default function InstanceView({}) {
 
   return (
     <>
-      <main
-        onClick={() => console.log(selectedInstance)}
-        className="flex w-[calc(100vw-260px)] px-5 "
-      >
+      <main className="flex w-[calc(100vw-260px)] px-5 ">
         <div className="flex items-center w-full flex-col h-screen">
           <div className="relative flex-1 w-full min-h-0 mb-5 mt-5">
             {/* vignette overlays */}
@@ -148,15 +183,28 @@ export default function InstanceView({}) {
             />
 
             <div className="h-full w-full flex">
-              <div className="flex elevated-bg-grad-thin flex-1 w-1/2 h-full px-7 overflow-y-scroll rounded-xl border border-neutral-700 p-2.5">
+              <motion.div
+                className={`flex elevated-bg-grad-thin flex-1 border-10 h-full px-7 overflow-y-scroll rounded-xl border border-neutral-700 p-2.5`}
+              >
                 <div className={`h-full w-full `}>
                   {instanceId &&
                     selectedInstance?.chatlogs?.map((obj) => chatMarkup(obj))}
                   {instanceId ? (
-                    selectedChat.map((obj, index) => chatMarkup(obj))
+                    <>
+                      {selectedChat.map((obj, index) => (
+                        <div key={obj.id}>
+                          {chatMarkup(obj)}
+                          <p>aaaaaaaaaa</p>
+                        </div>
+                      ))}
+                      {chatHistoryClient.map(
+                        (obj) =>
+                          obj.instanceId === tempInstanceId && chatMarkup(obj),
+                      )}
+                    </>
                   ) : (
                     <>
-                      <div className="h-full w-1/2">
+                      <div className="h-full w-full">
                         {isNoChats ? (
                           <div className="flex flex-col justify-center items-center w-full h-full">
                             <motion.p
@@ -185,65 +233,29 @@ export default function InstanceView({}) {
 
                   <div ref={bottomRef} />
                 </div>
-              </div>
+              </motion.div>
 
-              {/* ${webSearchResult.length > 0 ? "w-1/2" : "w-20"} */}
               <motion.div
                 animate={{
                   width:
-                    webSearchResult.length > 0 &&
-                    isWebSearchMode &&
-                    currentSwitch?.isWebInUse
+                    (webSearchResult.length > 0 && currentSwitch?.isWebInUse) ||
+                    (!currentSwitch && webSearchResult.length > 0)
                       ? "50%"
                       : "80px",
                 }}
-                className={`flex flex-col  overflow-y-scroll border border-neutral-700 bg-neutral-900  w-20 h-full rounded-xl ml-5`}
+                className={`flex flex-col overflow-y-scroll border border-neutral-700 bg-neutral-900  w-20 h-full rounded-xl ml-5`}
               >
                 {webSearchResult.length > 0 &&
-                  isWebSearchMode &&
                   currentSwitch?.isWebInUse &&
-                  webSearchResult.map((item) => {
-                    return (
-                      <div
-                        className="flex-col border-b m-7 border-neutral-700"
-                        key={item.title}
-                      >
-                        <div className="flex items-start">
-                          <img
-                            className="mr-2 rounded-lg border-neutral-700 bg-neutral-300 h-10 border-2 min-w-10"
-                            src={item.profile.img}
-                          />
-                          <div className="-mt-1">
-                            <h3 className="border-b border-neutral-700 pb-2">
-                              {item.title}
-                            </h3>
-                            <div className="flex items-top ">
-                              <div
-                                className="py-2"
-                                dangerouslySetInnerHTML={{
-                                  __html: `${item.description}`,
-                                }}
-                              ></div>
-                              {item.thumbnail && (
-                                <div className="flex-col mt-3 ml-5">
-                                  <img
-                                    style={{ objectFit: "cover" }}
-                                    className="min-h-20 min-w-30  rounded-lg border border-neutral-700 "
-                                    src={item.thumbnail?.src}
-                                  ></img>
-                                  <p className="pt-1 text-right">
-                                    {item.profile.name}
-                                  </p>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    );
+                  webSearchResult.map((obj) => {
+                    return searchResultMarkup(obj);
                   })}
 
-                <p></p>
+                {!currentSwitch &&
+                  webSearchResult.length > 0 &&
+                  webSearchResult.map((obj) => {
+                    return searchResultMarkup(obj);
+                  })}
               </motion.div>
             </div>
           </div>

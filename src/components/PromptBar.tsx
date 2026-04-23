@@ -75,6 +75,10 @@ export default function PromptBar({
   const [addSpin, setAddSpin] = useState(0);
   const addSpinRef = useRef(addSpin);
 
+  const currentSwitch = webModeSwitch.find(
+    (instance) => instance.instanceIdForWeb === selectedInstanceId,
+  );
+
   return (
     <section className="px-5 pt-5 mb-5 rounded-xl border elevated-bg-grad-thin border-neutral-700">
       <form
@@ -86,7 +90,7 @@ export default function PromptBar({
             {
               id: tempId,
               prompt: promptQuery,
-              instanceId: instanceId ? instanceId : tempInstanceId,
+              instanceId: tempInstanceId,
             },
           ]);
           !instanceId &&
@@ -98,7 +102,7 @@ export default function PromptBar({
               },
             ]);
 
-          if (isWebSearchMode) {
+          if (currentSwitch?.isWebInUse || isWebSearchMode) {
             getWebSearch();
           } else {
             getChatWithContext();
@@ -160,22 +164,34 @@ export default function PromptBar({
           </motion.div>
           Chat Mode
         </button>
-        <button
-          onClick={() => {
-            setIsWebSearchMode(isWebSearchMode ? false : true);
-            setWebModeSwitch((prev) =>
-              prev.map((item) =>
-                item.instanceIdForWeb === selectedInstanceId
-                  ? { ...item, isWebInUse: item.isWebInUse ? false : true }
-                  : item,
-              ),
-            );
-          }}
-          className={`cursor-pointer border flex p-3 ml-2 border-neutral-700 rounded-xl ${isWebSearchMode && "bg-red-400"}`}
-        >
-          <LuGlobe className="mr-2 w-5 h-5" />
-          Web Search Mode
-        </button>
+
+        {currentSwitch ? (
+          <button
+            onClick={() => {
+              setWebModeSwitch((prev) =>
+                prev.map((item) =>
+                  item.instanceIdForWeb === selectedInstanceId
+                    ? { ...item, isWebInUse: item.isWebInUse ? false : true }
+                    : item,
+                ),
+              );
+            }}
+            className={`cursor-pointer border flex p-3 ml-2 border-neutral-700 rounded-xl ${currentSwitch?.isWebInUse ? "bg-red-400" : ""}`}
+          >
+            <LuGlobe className="mr-2 w-5 h-5" />
+            Web Search Mode
+          </button>
+        ) : (
+          <button
+            onClick={() => {
+              setIsWebSearchMode(isWebSearchMode ? false : true);
+            }}
+            className={`${!selectedInstanceId && isWebSearchMode ? "bg-red-900" : ""} cursor-pointer border flex p-3 ml-2 border-neutral-700 rounded-xl ${isWebSearchMode ? "bg-red-400" : ""}`}
+          >
+            <LuGlobe className="mr-2 w-5 h-5" />
+            Web Search Mode
+          </button>
+        )}
       </div>
     </section>
   );
