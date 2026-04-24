@@ -21,7 +21,6 @@ import { map } from "motion/react-client";
 
 interface Props {
   getWebSearch: () => Promise<void>;
-  getModelDirect: () => Promise<void>;
   getChatWithContext: () => Promise<void>;
   promptQuery: string;
   setPromptQuery: (value: string) => void;
@@ -33,7 +32,6 @@ interface Props {
 
 export default function PromptBar({
   getWebSearch,
-  getModelDirect,
   getChatWithContext,
   promptQuery,
   setPromptQuery,
@@ -65,8 +63,8 @@ export default function PromptBar({
   const {
     isNoChats,
     setIsNoChats,
-    isWebSearchMode,
-    setIsWebSearchMode,
+    isSearchModeMemory,
+    setIsSearchModeMemory,
     webModeSwitch,
     setWebModeSwitch,
     instanceId: selectedInstanceId,
@@ -102,7 +100,7 @@ export default function PromptBar({
               },
             ]);
 
-          if (currentSwitch?.isWebInUse || isWebSearchMode) {
+          if (currentSwitch?.isWebInUse || isSearchModeMemory) {
             getWebSearch();
           } else {
             getChatWithContext();
@@ -184,9 +182,9 @@ export default function PromptBar({
         ) : (
           <button
             onClick={() => {
-              setIsWebSearchMode(isWebSearchMode ? false : true);
+              setIsSearchModeMemory(isSearchModeMemory ? false : true);
             }}
-            className={`${!selectedInstanceId && isWebSearchMode ? "bg-red-900" : ""} cursor-pointer border flex p-3 ml-2 border-neutral-700 rounded-xl ${isWebSearchMode ? "bg-red-400" : ""}`}
+            className={`${!selectedInstanceId && isSearchModeMemory ? "bg-red-900" : ""} cursor-pointer border flex p-3 ml-2 border-neutral-700 rounded-xl ${isSearchModeMemory ? "bg-red-400" : ""}`}
           >
             <LuGlobe className="mr-2 w-5 h-5" />
             Web Search Mode

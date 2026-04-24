@@ -64,16 +64,10 @@ export default function InstanceView({}) {
 
   const {
     instanceId,
-    setInstanceId,
-    tempId,
     tempInstanceId,
     isNoChats,
-    setIsNoChats,
-    isWebSearchMode,
     webSearchResult,
     webModeSwitch,
-    setWebModeSwitch,
-    setwebSearchResult,
   } = globalHooks;
 
   const chatHistoryContext = useContext(chatContext);

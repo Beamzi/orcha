@@ -1,11 +1,5 @@
 "use client";
-import {
-  Dispatch,
-  SetStateAction,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
+import { useContext, useState } from "react";
 import { chatContext, ChatType } from "@/context/chat";
 import PromptBar from "./PromptBar";
 import {
@@ -15,58 +9,68 @@ import {
 import { sessionOrchaContext } from "@/context/session";
 import { globalHooksContext } from "@/context/globalHooks";
 import ollama from "ollama/browser";
+import {
+  useChatHistory,
+  useGlobalHooks,
+  useInstances,
+  useSessionContext,
+} from "@/hooks/context/contextHooks";
 
-interface resultProps {
-  title: string;
-  url: string;
-}
 interface Props {
   instanceId: number | undefined;
 }
 
+const transformChatlogs = (
+  selectedInstance: ChatInstancesType | undefined,
+  filteredChatsByInstance: ChatType[] | undefined,
+) => {
+  const server = selectedInstance?.chatlogs
+    ?.map((chat) => [
+      {
+        role: "user",
+        content: chat.prompt ?? "",
+      },
+      {
+        role: "assistant",
+        content: chat.response ?? "",
+      },
+    ])
+    .flat();
+  const client = filteredChatsByInstance
+    ?.map((chat) => [
+      {
+        role: "user",
+        content: chat.prompt ?? "",
+      },
+      {
+        role: "assistant",
+        content: chat.response ?? "",
+      },
+    ])
+    .flat();
+
+  let merge = [...(server ?? []), ...(client ?? [])];
+
+  if (merge.length > 20) {
+    merge = merge.slice(-20);
+  }
+
+  return merge;
+};
+
 export default function CoreRequestChain({ instanceId }: Props) {
   const [promptQuery, setPromptQuery] = useState("");
-  const [searchResult, setSearchResult] = useState<resultProps[]>([]);
-  const [promptInject, setPromptInject] = useState("");
-  const [modelSearchSum, setModelSearchSum] = useState("");
-  const [isPromptReady, setIsPromptReady] = useState(false);
-  const [modelDirect, setModelDirect] = useState("");
-
-  const sessionContext = useContext(sessionOrchaContext);
-  if (!sessionContext) throw new Error("invalid session");
-
-  const userSession = sessionContext;
-  const authorId = userSession.id;
-
-  const chatHistoryContext = useContext(chatContext);
-  if (!chatHistoryContext) throw new Error("context not loaded");
-
-  const { chatHistoryClient, setChatHistoryClient } = chatHistoryContext;
-
-  const globalHooks = useContext(globalHooksContext);
-  if (!globalHooks) throw new Error("globals not loaded");
-
+  const { chatHistoryClient, setChatHistoryClient } = useChatHistory();
+  const { chatInstancesClient, setChatInstancesClient } = useInstances();
+  const userSession = useSessionContext();
   const {
-    forceInstance,
-    setForceInstance,
     tempId,
     tempInstanceId,
-    setTempId,
-    setTempInstanceId,
-    webSearchResult,
     setwebSearchResult,
-    isWebSearchMode,
-    webModeSwitch,
+    isSearchModeMemory,
     setWebModeSwitch,
-
     setInstanceId: setSelectedInstanceId,
-  } = globalHooks;
-
-  const instanceContext = useContext(chatInstanceContext);
-
-  if (!instanceContext) throw new Error("instance content not loaded");
-
-  const { chatInstancesClient, setChatInstancesClient } = instanceContext;
+  } = useGlobalHooks();
 
   async function getWebSearch() {
     try {
@@ -82,26 +86,10 @@ export default function CoreRequestChain({ instanceId }: Props) {
         response.searchResponse.web.results,
       );
 
-      const rawSearchResult = response.searchResponse.web.results;
-
-      console.log(response);
-
-      setPromptInject(jsonResponseString);
-      setSearchResult(response.searchResponse.web.results);
-
-      // setSearchResult((prev) => []);
       setwebSearchResult(response.searchResponse.web.results);
-
-      // console.log(searchResult);
-
       getWebSearchWithContext(jsonResponseString);
-
-      // setIsPromptReady(true);
-      // setTimeout(() => {
-      //   setIsPromptReady(false);
-      // }, 10);
     } catch (e) {
-      // console.error(e);
+      console.error(e);
     }
   }
 
@@ -122,11 +110,9 @@ export default function CoreRequestChain({ instanceId }: Props) {
             role: "user",
             content: `You are a helpful Assistant, Summarise the following search results, ${promptInject}`,
           },
-          // { role: "user", content: promptQuery },
         ],
         stream: true,
       });
-
       let fullResponse = "";
 
       for await (const part of stream) {
@@ -139,7 +125,6 @@ export default function CoreRequestChain({ instanceId }: Props) {
           ),
         );
       }
-
       //this is where an instance is created OR an addition to the chatlog of an instance by ID
       if (instanceId) {
         createChat(instanceId, fullResponse);
@@ -150,64 +135,6 @@ export default function CoreRequestChain({ instanceId }: Props) {
       console.error(e);
     }
   }
-
-  async function getModelSearchSum() {
-    try {
-      let request = await fetch("http://localhost:11434/api/generate", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          model: "gemma3:1b",
-          prompt: `please summarise the following search results'${promptInject}'`,
-          stream: false,
-        }),
-      });
-
-      const response = await request.json();
-
-      setModelSearchSum(response.response);
-    } catch (e) {
-      console.error(e);
-    }
-  }
-
-  const transformChatlogs = (
-    selectedInstance: ChatInstancesType | undefined,
-    filteredChatsByInstance: ChatType[] | undefined,
-  ) => {
-    const server = selectedInstance?.chatlogs
-      ?.map((chat) => [
-        {
-          role: "user",
-          content: chat.prompt ?? "",
-        },
-        {
-          role: "assistant",
-          content: chat.response ?? "",
-        },
-      ])
-      .flat();
-    const client = filteredChatsByInstance
-      ?.map((chat) => [
-        {
-          role: "user",
-          content: chat.prompt ?? "",
-        },
-        {
-          role: "assistant",
-          content: chat.response ?? "",
-        },
-      ])
-      .flat();
-
-    let merge = [...(server ?? []), ...(client ?? [])];
-
-    if (merge.length > 20) {
-      merge = merge.slice(-20);
-    }
-
-    return merge;
-  };
 
   async function getChatWithContext() {
     const filteredChatsByInstance = chatHistoryClient.filter(
@@ -250,31 +177,6 @@ export default function CoreRequestChain({ instanceId }: Props) {
     }
   }
 
-  async function getModelDirect() {
-    try {
-      const request = await fetch("http://localhost:11434/api/generate", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          model: "gemma3:1b",
-          prompt: promptQuery,
-          stream: false,
-        }),
-      });
-
-      const response = await request.json();
-      setModelDirect(response.response);
-
-      if (instanceId) {
-        createChat(instanceId, response.response);
-      } else {
-        createInstance(response.response);
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  }
-
   async function createInstance(modelResponse: string) {
     try {
       const request = await fetch("/api/create-instance", {
@@ -310,7 +212,7 @@ export default function CoreRequestChain({ instanceId }: Props) {
         ...prev,
         {
           instanceIdForWeb: response.prismaResponse.id,
-          isWebInUse: isWebSearchMode,
+          isWebInUse: isSearchModeMemory,
         },
       ]);
 
@@ -369,24 +271,10 @@ export default function CoreRequestChain({ instanceId }: Props) {
     }
   }
 
-  useEffect(() => {
-    if (isPromptReady) {
-      getModelSearchSum();
-    }
-  }, [isPromptReady]);
-
-  // useEffect(() => {
-  //   if (instanceId !== undefined) {
-  //     setInstanceMatch(instanceId);
-  //   }
-  // }, [instanceId]);
-
   return (
     <div className="w-full">
       <PromptBar
         getWebSearch={getWebSearch}
-        // getWebSearchWithContext={getWebSearchWithContext}
-        getModelDirect={getModelDirect}
         getChatWithContext={getChatWithContext}
         promptQuery={promptQuery}
         setPromptQuery={setPromptQuery}

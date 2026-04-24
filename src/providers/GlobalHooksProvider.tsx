@@ -15,7 +15,7 @@ export default function GlobalHooksProvider({ children }: Props) {
   const [tempId, setTempId] = useState<number>(7898576);
   const [tempInstanceId, setTempInstanceId] = useState<number>(2534453);
   const [isNoChats, setIsNoChats] = useState(true);
-  const [isWebSearchMode, setIsWebSearchMode] = useState(false);
+  const [isSearchModeMemory, setIsSearchModeMemory] = useState(false);
   const [webSearchResult, setwebSearchResult] = useState<WebSearchResultType[]>(
     [],
   );
@@ -41,8 +41,8 @@ export default function GlobalHooksProvider({ children }: Props) {
         setTempInstanceId,
         isNoChats,
         setIsNoChats,
-        isWebSearchMode,
-        setIsWebSearchMode,
+        isSearchModeMemory,
+        setIsSearchModeMemory,
         webSearchResult,
         setwebSearchResult,
         webModeSwitch,

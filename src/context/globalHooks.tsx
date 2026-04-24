@@ -26,8 +26,8 @@ interface Props {
   setTempInstanceId: Dispatch<SetStateAction<number>>;
   isNoChats: boolean;
   setIsNoChats: (value: boolean) => void;
-  isWebSearchMode: boolean;
-  setIsWebSearchMode: (value: boolean) => void;
+  isSearchModeMemory: boolean;
+  setIsSearchModeMemory: (value: boolean) => void;
   webSearchResult: WebSearchResultType[];
   setwebSearchResult: Dispatch<SetStateAction<WebSearchResultType[]>>;
   webModeSwitch: WebModeSwitchType[];

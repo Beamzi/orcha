@@ -14,7 +14,6 @@ import { motion } from "motion/react";
 import { chatInstanceContext } from "@/context/chatInstances";
 import { globalHooksContext } from "@/context/globalHooks";
 import { chatContext } from "@/context/chat";
-import { object, select } from "motion/react-client";
 import { User } from "next-auth";
 import OrcaIcon from "@/svg/OrcaIcon";
 
@@ -29,7 +28,6 @@ export default function Sidebar({ className, sessiondata }: Props) {
   const [openInstanceMenu, setOpenInstanceMenu] = useState(false);
   const [activateNameField, setActivateNameField] = useState(false);
   const [newInstanceName, setNewInstanceName] = useState("");
-  const [trueTitle, setTrueTitle] = useState("");
   const [showUserActions, setShowUserActions] = useState(false);
 
   const context = useContext(chatInstanceContext);
@@ -46,21 +44,8 @@ export default function Sidebar({ className, sessiondata }: Props) {
 
   if (!globalHooks) throw new Error("globalHooks not loaded");
 
-  const {
-    instanceId,
-    setInstanceId,
-    forceInstance,
-    setForceInstance,
-    tempId,
-    tempInstanceId,
-    setTempId,
-    setTempInstanceId,
-    isNoChats,
-    setIsNoChats,
-    isWebSearchMode,
-    webModeSwitch,
-    setWebModeSwitch,
-  } = globalHooks;
+  const { instanceId, setInstanceId, setIsNoChats, setWebModeSwitch } =
+    globalHooks;
 
   const selectedInstance = chatInstancesClient.find(
     (instance) => instance.id === instanceId,
