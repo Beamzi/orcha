@@ -2,12 +2,7 @@
 import { useContext, useState } from "react";
 import { chatContext, ChatType } from "@/context/chat";
 import PromptBar from "./PromptBar";
-import {
-  chatInstanceContext,
-  ChatInstancesType,
-} from "@/context/chatInstances";
-import { sessionOrchaContext } from "@/context/session";
-import { globalHooksContext } from "@/context/globalHooks";
+import { ChatInstancesType } from "@/context/chatInstances";
 import ollama from "ollama/browser";
 import {
   useChatHistory,
