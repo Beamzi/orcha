@@ -35,7 +35,9 @@ export default function OrchaReadme() {
     <article className="max-w-2xl space-y-8 px-2 py-8 text-sm text-neutral-300">
       {/* Header */}
       <div className="space-y-2">
-        <p className="text-neutral-400">Local AI, made accessible.</p>
+        <p className="text-neutral-400">
+          Local AI, made accessible for people priced out of frontier models
+        </p>
         <p className="leading-relaxed text-neutral-300">
           Orcha is an early-stage desktop chat application that brings a proper
           UI, persistent chat history, and live web search to locally-run AI

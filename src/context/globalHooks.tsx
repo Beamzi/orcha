@@ -32,6 +32,10 @@ interface Props {
   setwebSearchResult: Dispatch<SetStateAction<WebSearchResultType[]>>;
   webModeSwitch: WebModeSwitchType[];
   setWebModeSwitch: Dispatch<SetStateAction<WebModeSwitchType[]>>;
+  isStreaming: boolean;
+  setIsStreaming: (value: boolean) => void;
+  isNewChatSelected: boolean;
+  setIsNewChatSelected: (value: boolean) => void;
 }
 
 export const globalHooksContext = createContext<Props | undefined>(undefined);

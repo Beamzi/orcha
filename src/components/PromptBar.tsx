@@ -17,7 +17,12 @@ import { ChatInstancesType } from "@/context/chatInstances";
 import { sessionOrchaContext } from "@/context/session";
 import { globalHooksContext } from "@/context/globalHooks";
 import { motion } from "motion/react";
-import { map } from "motion/react-client";
+import { input, map } from "motion/react-client";
+import {
+  useChatHistory,
+  useGlobalHooks,
+  useSessionContext,
+} from "@/hooks/context/contextHooks";
 
 interface Props {
   getWebSearch: () => Promise<void>;
@@ -30,6 +35,25 @@ interface Props {
   setChatInstancesClient: Dispatch<SetStateAction<ChatInstancesType[]>>;
 }
 
+const containerVariants = {
+  // hover: { scale: 1.5 },
+  tap: { scale: 1.5, transition: { duration: 0.2 } },
+};
+
+const getInitAnimate = (isSearchModeMemory: boolean) => {
+  return {
+    initial: false,
+    animate: {
+      filter: isSearchModeMemory
+        ? [
+            "hue-rotate(280deg) brightness(1.5)",
+            "hue-rotate(0deg) brightness(1)",
+          ]
+        : ["hue-rotate(0deg) brightness(1)"],
+    },
+    transition: { duration: 0.7 },
+  };
+};
 export default function PromptBar({
   getWebSearch,
   getChatWithContext,
@@ -40,25 +64,12 @@ export default function PromptBar({
   tempInstanceId,
   setChatInstancesClient,
 }: Props) {
-  const context = useContext(chatContext);
-
-  if (!context) {
-    throw new Error("context not loaded");
-  }
-
-  const { chatHistoryClient, setChatHistoryClient } = context;
-
-  const sessionContext = useContext(sessionOrchaContext);
-  if (!sessionContext) throw new Error("invalid session");
-
-  const userSession = sessionContext;
-  const authorId = userSession.id;
-
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const modeFocus = useRef<HTMLInputElement>(null);
 
-  const globalHooks = useContext(globalHooksContext);
-
-  if (!globalHooks) throw new Error("globalhooks not loaded");
+  const { chatHistoryClient, setChatHistoryClient } = useChatHistory();
+  const userSession = useSessionContext();
+  const authorId = userSession.id;
 
   const {
     isNoChats,
@@ -68,7 +79,8 @@ export default function PromptBar({
     webModeSwitch,
     setWebModeSwitch,
     instanceId: selectedInstanceId,
-  } = globalHooks;
+    isNewChatSelected,
+  } = useGlobalHooks();
 
   const [addSpin, setAddSpin] = useState(0);
   const addSpinRef = useRef(addSpin);
@@ -106,11 +118,9 @@ export default function PromptBar({
             getChatWithContext();
           }
 
-          // getModelDirect();
           setPromptQuery("");
           setIsSubmitted(true);
           setIsNoChats(false);
-
           setAddSpin((prev) => (prev += 360));
 
           setTimeout(() => setIsSubmitted(false), 800);
@@ -118,18 +128,142 @@ export default function PromptBar({
           // checkHeuristics(promptQuery, keywords) === true
           //   ? getResult()
           //   : getModelDirect();
+
+          //???????????????
+          // isNewChatSelected
         }}
       >
         <input
+          id="promptInput"
+          ref={modeFocus}
           className=" min-h w-full h-full px-5   bg-neutral-800 outline-none rounded-md"
           onChange={(e) => setPromptQuery(e.target.value)}
           value={promptQuery}
           placeholder="How Can I Help?"
         ></input>
-        <div className="flex ml-2 h-full ">
+        <div className="flex ml-2 h-full">
+          {currentSwitch ? (
+            <>
+              <motion.button
+                {...getInitAnimate(!currentSwitch?.isWebInUse)}
+                whileTap="tap"
+                onClick={() => {
+                  if (currentSwitch) {
+                    setWebModeSwitch((prev) =>
+                      prev.map((item) =>
+                        item.instanceIdForWeb === selectedInstanceId
+                          ? { ...item, isWebInUse: false }
+                          : item,
+                      ),
+                    );
+                  }
+                }}
+                type="button"
+                className={`border group  transition-all duration-200 ${!currentSwitch?.isWebInUse ? "bg-red-400" : "hover:bg-red-900 duration-300 "}  cursor-pointer flex items-center p-3 mr-2 rounded-xl border-neutral-700 min-w-34`}
+              >
+                <motion.div
+                  animate={{
+                    rotate: addSpinRef.current !== addSpin ? addSpin : 0,
+                    scale: isSubmitted ? 1.2 : 1,
+                  }}
+                  transition={{ duration: 1 }}
+                  className="mr-2 w-5 h-5"
+                >
+                  <motion.div variants={containerVariants}>
+                    <LuRefreshCcw
+                      className={`w-full h-full  ${!currentSwitch?.isWebInUse ? "" : "group-hover:scale-110 duration-300 "}  ${isSubmitted && "stroke-red-900  "} transition-all duration-300`}
+                    />
+                  </motion.div>
+                </motion.div>
+                Chat Mode
+              </motion.button>
+              <motion.button
+                {...getInitAnimate(currentSwitch?.isWebInUse)}
+                whileTap="tap"
+                type="button"
+                onClick={() => {
+                  setWebModeSwitch((prev) =>
+                    prev.map((item) =>
+                      item.instanceIdForWeb === selectedInstanceId
+                        ? {
+                            ...item,
+                            isWebInUse: item.isWebInUse ? false : true,
+                          }
+                        : item,
+                    ),
+                  );
+                  setTimeout(() => modeFocus.current?.focus(), 0);
+                }}
+                className={`cursor-pointer group transition-all  border min-w-49 flex items-center p-3 mr-2 border-neutral-700 rounded-xl ${currentSwitch?.isWebInUse ? "bg-red-400 duration-300" : "hover:bg-red-900 duration-300"}`}
+              >
+                <motion.div variants={containerVariants}>
+                  <LuGlobe
+                    className={`mr-2 w-5 h-5 ${currentSwitch?.isWebInUse ? "" : "group-hover:scale-110 duration-300 "}`}
+                  />
+                </motion.div>
+                Web Search Mode
+              </motion.button>
+            </>
+          ) : (
+            <>
+              <motion.button
+                {...getInitAnimate(!isSearchModeMemory)}
+                whileTap="tap"
+                onClick={() => {
+                  setIsSearchModeMemory(false);
+                }}
+                type="button"
+                className={`border group  transition-all duration-200 ${!isSearchModeMemory ? "bg-red-400" : "hover:bg-red-900  duration-300  "}  cursor-pointer flex items-center p-3 mr-2 rounded-xl  border-neutral-700 min-w-34`}
+              >
+                <motion.div
+                  animate={{
+                    rotate: addSpinRef.current !== addSpin ? addSpin : 0,
+                    scale: isSubmitted ? 1.2 : 1,
+                  }}
+                  transition={{ duration: 1 }}
+                  className="mr-2 w-5 h-5"
+                >
+                  <motion.div
+                    variants={containerVariants}
+                    className="w-full h-full"
+                  >
+                    <LuRefreshCcw
+                      className={`w-full tansition-all h-full  ${isSearchModeMemory ? "group-hover:scale-110" : "  "}  ${isSubmitted && "stroke-red-900  "} transition-all duration-300`}
+                    />
+                  </motion.div>
+                </motion.div>
+                <p
+                  className={`transition-all ${!isSearchModeMemory ? "" : "group-hover:text-red-400 duration-300"}`}
+                >
+                  Chat Mode
+                </p>
+              </motion.button>
+              <motion.button
+                {...getInitAnimate(isSearchModeMemory)}
+                whileTap="tap"
+                type="button"
+                onClick={() => {
+                  setIsSearchModeMemory(isSearchModeMemory ? false : true);
+                  setTimeout(() => modeFocus.current?.focus(), 0);
+                }}
+                className={`${!selectedInstanceId && isSearchModeMemory ? "bg-red-400" : ""} cursor-pointer border min-w-49 group transition-all flex items-center p-3 mr-2 border-neutral-700 rounded-xl ${isSearchModeMemory ? "bg-red-400" : "hover:bg-red-900 "}`}
+              >
+                <motion.div variants={containerVariants}>
+                  <LuGlobe
+                    className={`mr-2 w-5 h-5 transitiona-all ${isSearchModeMemory ? "" : "group-hover:scale-110 duration-300"} `}
+                  />
+                </motion.div>
+                <p
+                  className={`transition-all ${isSearchModeMemory ? "" : "group-hover:text-red-400 duration-300"}`}
+                >
+                  Web Search Mode
+                </p>
+              </motion.button>
+            </>
+          )}
           <button
             className={`p-2 ${
-              promptQuery.length > 0 ? "bg-red-400" : ""
+              promptQuery.length > 0 ? "bg-red-900" : ""
             } mr-2 border border-neutral-700 rounded-md cursor-pointer hover:bg-red-400 transition-all duration-300 group`}
             type="submit"
           >
@@ -144,53 +278,7 @@ export default function PromptBar({
           </button>
         </div>
       </form>
-      <div className="flex items-center justify-center py-3">
-        <button
-          className={`border bg-red-400 cursor-pointer flex p-3 mr-2 rounded-xl border-neutral-700`}
-        >
-          <motion.div
-            animate={{
-              rotate: addSpinRef.current !== addSpin ? addSpin : 0,
-              scale: isSubmitted ? 1.2 : 1,
-            }}
-            transition={{ duration: 1 }}
-            className="mr-2 w-5 h-5"
-          >
-            <LuRefreshCcw
-              className={`w-full h-full ${isSubmitted && "stroke-red-900"} transition-all duration-300`}
-            />
-          </motion.div>
-          Chat Mode
-        </button>
-
-        {currentSwitch ? (
-          <button
-            onClick={() => {
-              setWebModeSwitch((prev) =>
-                prev.map((item) =>
-                  item.instanceIdForWeb === selectedInstanceId
-                    ? { ...item, isWebInUse: item.isWebInUse ? false : true }
-                    : item,
-                ),
-              );
-            }}
-            className={`cursor-pointer border flex p-3 ml-2 border-neutral-700 rounded-xl ${currentSwitch?.isWebInUse ? "bg-red-400" : ""}`}
-          >
-            <LuGlobe className="mr-2 w-5 h-5" />
-            Web Search Mode
-          </button>
-        ) : (
-          <button
-            onClick={() => {
-              setIsSearchModeMemory(isSearchModeMemory ? false : true);
-            }}
-            className={`${!selectedInstanceId && isSearchModeMemory ? "bg-red-900" : ""} cursor-pointer border flex p-3 ml-2 border-neutral-700 rounded-xl ${isSearchModeMemory ? "bg-red-400" : ""}`}
-          >
-            <LuGlobe className="mr-2 w-5 h-5" />
-            Web Search Mode
-          </button>
-        )}
-      </div>
+      <div className="flex items-center justify-center py-3"></div>
     </section>
   );
 }

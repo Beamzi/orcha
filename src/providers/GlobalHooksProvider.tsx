@@ -19,7 +19,10 @@ export default function GlobalHooksProvider({ children }: Props) {
   const [webSearchResult, setwebSearchResult] = useState<WebSearchResultType[]>(
     [],
   );
+
   const [webModeSwitch, setWebModeSwitch] = useState<WebModeSwitchType[]>([]);
+  const [isStreaming, setIsStreaming] = useState(true);
+  const [isNewChatSelected, setIsNewChatSelected] = useState(true);
 
   // const [tempId, setTempId] = useState<number>(() =>
   //   Math.floor(Math.random() * 15204),
@@ -47,6 +50,10 @@ export default function GlobalHooksProvider({ children }: Props) {
         setwebSearchResult,
         webModeSwitch,
         setWebModeSwitch,
+        isStreaming,
+        setIsStreaming,
+        isNewChatSelected,
+        setIsNewChatSelected,
       }}
     >
       {children}

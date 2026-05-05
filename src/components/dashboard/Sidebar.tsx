@@ -1,14 +1,12 @@
 "use client";
 
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import {
   LuChevronsUpDown,
   LuCirclePlus,
   LuEllipsis,
   LuPanelLeftOpen,
   LuPanelRightOpen,
-  LuPlus,
-  LuSquarePlus,
 } from "react-icons/lu";
 import { motion } from "motion/react";
 import { chatInstanceContext } from "@/context/chatInstances";
@@ -16,6 +14,11 @@ import { globalHooksContext } from "@/context/globalHooks";
 import { chatContext } from "@/context/chat";
 import { User } from "next-auth";
 import OrcaIcon from "@/svg/OrcaIcon";
+import {
+  useChatHistory,
+  useGlobalHooks,
+  useInstances,
+} from "@/hooks/context/contextHooks";
 
 //browser wants lowercase sessiondata **don't question it??**
 interface Props {
@@ -30,22 +33,16 @@ export default function Sidebar({ className, sessiondata }: Props) {
   const [newInstanceName, setNewInstanceName] = useState("");
   const [showUserActions, setShowUserActions] = useState(false);
 
-  const context = useContext(chatInstanceContext);
-  if (!context) throw new Error("context not loaded");
-
-  const { chatInstancesClient, setChatInstancesClient } = context;
-
-  const contextChat = useContext(chatContext);
-  if (!contextChat) throw new Error("chats not loaded");
-
-  const { chatHistoryClient, setChatHistoryClient } = contextChat;
-
-  const globalHooks = useContext(globalHooksContext);
-
-  if (!globalHooks) throw new Error("globalHooks not loaded");
-
-  const { instanceId, setInstanceId, setIsNoChats, setWebModeSwitch } =
-    globalHooks;
+  const { chatInstancesClient, setChatInstancesClient } = useInstances();
+  const { chatHistoryClient, setChatHistoryClient } = useChatHistory();
+  const {
+    instanceId,
+    setInstanceId,
+    setIsNoChats,
+    setWebModeSwitch,
+    isNewChatSelected,
+    setIsNewChatSelected,
+  } = useGlobalHooks();
 
   const selectedInstance = chatInstancesClient.find(
     (instance) => instance.id === instanceId,
@@ -134,9 +131,10 @@ export default function Sidebar({ className, sessiondata }: Props) {
                 </button>
               </div>
             </header>
-            <div className="border  p-2 border-neutral-700 rounded-xl my-5">
+            <div className="border p-2 border-neutral-700 rounded-xl my-5">
               <button
                 onClick={() => {
+                  setIsNewChatSelected(true);
                   setInstanceId(undefined);
                   setIsNoChats(true);
                 }}
@@ -146,19 +144,19 @@ export default function Sidebar({ className, sessiondata }: Props) {
                 New Chat
               </button>
             </div>
-            <section className="p-2 my-5 border w-full rounded-xl min-h-0 h-full flex-1 bg-neutral-900 border-neutral-700">
-              <div className="">
+            <section className="p-2  border w-full rounded-xl min-h-0 h-full flex-1 bg-neutral-900 border-neutral-700">
+              <div className="overflow-y-auto max-h-95">
                 {chatInstancesClient.map((item) => {
                   return (
                     <div
-                      className="flex relative justify-between h-full"
+                      className={`flex my-2 mx-1 transition-all duration-200 rounded-md ${instanceId === item.id ? "bg-red-400" : "hover:bg-red-900"} relative justify-between h-full`}
                       key={item.id}
                     >
                       {activateNameField && instanceId === item.id ? (
                         <input
                           autoFocus={true}
                           placeholder={`${item.title}`}
-                          className={`cursor-pointer rounded-md p-1 mr-1 w-full justify-start text-start transition-all duration-200 ${instanceId === item.id && "bg-red-400"}`}
+                          className={`cursor-pointer rounded-md  p-1 mr-1 w-full justify-start text-start transition-all duration-200 ${instanceId === item.id && ""}`}
                           value={newInstanceName}
                           onChange={(e) => {
                             setNewInstanceName(
@@ -180,14 +178,14 @@ export default function Sidebar({ className, sessiondata }: Props) {
                             setActivateNameField(false);
                             setInstanceId(item.id);
                           }}
-                          className={`cursor-pointer rounded-md p-1 mr-1 w-full justify-start text-start transition-all duration-200 ${instanceId === item.id && "bg-red-400"}`}
+                          className={`cursor-pointer rounded-md p-1 pl-2 mr-1  truncate w-full justify-start text-start transition-all duration-200 ${instanceId === item.id && "bg-red-400"}`}
                         >
                           {item.title}
                         </button>
                       )}
 
                       <button
-                        className={`cursor-pointer rounded-md px-1 transitional-all duration-200 ${instanceId === item.id && openInstanceMenu && "bg-red-400"} `}
+                        className={`cursor-pointer rounded-md px-1 transitional-all   duration-200 ${instanceId === item.id && openInstanceMenu && " "} `}
                         onClick={() => {
                           setIsNoChats(false);
 
@@ -196,7 +194,9 @@ export default function Sidebar({ className, sessiondata }: Props) {
                           setOpenInstanceMenu(openInstanceMenu ? false : true);
                         }}
                       >
-                        <LuEllipsis className={`w-5 h-5 `} />
+                        <LuEllipsis
+                          className={`w-5 h-5 hover:scale-120 transitional-all   duration-200 `}
+                        />
                       </button>
                       {instanceId === item.id && openInstanceMenu && (
                         <div
@@ -219,6 +219,7 @@ export default function Sidebar({ className, sessiondata }: Props) {
 
                             <li
                               onClick={() => {
+                                setIsNewChatSelected(false);
                                 setInstanceId(undefined);
                                 setOpenInstanceMenu(
                                   openInstanceMenu ? false : true,
@@ -255,7 +256,6 @@ export default function Sidebar({ className, sessiondata }: Props) {
           </motion.div>
         )}
       </section>
-
       <section className="border relative border-neutral-700 m-5 rounded-xl bg-neutral-900">
         <div className="p-3 flex justify-between">
           <img
@@ -278,7 +278,7 @@ export default function Sidebar({ className, sessiondata }: Props) {
                 <li>Sign Out</li>
               </ul>
             </div>
-          )}
+          )}{" "}
         </div>
       </section>
     </motion.aside>

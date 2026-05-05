@@ -244,8 +244,8 @@ export default function GettingStarted() {
         <strong className="font-medium text-neutral-900">
           You're all set.
         </strong>{" "}
-        Visit <InlineCode>http://localhost:3000</InlineCode> and sign in with
-        Google to get started.
+        Visit <InlineCode>http://localhost:3000/dashboard</InlineCode> and sign
+        in with Google to get started.
       </div>
     </div>
   );

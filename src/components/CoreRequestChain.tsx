@@ -10,6 +10,7 @@ import {
   useInstances,
   useSessionContext,
 } from "@/hooks/context/contextHooks";
+import { convertServerPatchToFullTree } from "next/dist/client/components/segment-cache/navigation";
 
 interface Props {
   instanceId: number | undefined;
@@ -65,6 +66,8 @@ export default function CoreRequestChain({ instanceId }: Props) {
     isSearchModeMemory,
     setWebModeSwitch,
     setInstanceId: setSelectedInstanceId,
+    isStreaming,
+    setIsStreaming,
   } = useGlobalHooks();
 
   async function getWebSearch() {
@@ -111,6 +114,8 @@ export default function CoreRequestChain({ instanceId }: Props) {
       let fullResponse = "";
 
       for await (const part of stream) {
+        setIsStreaming(false);
+
         fullResponse += part.message.content;
         setChatHistoryClient((prev) =>
           prev.map((item) =>
@@ -120,6 +125,8 @@ export default function CoreRequestChain({ instanceId }: Props) {
           ),
         );
       }
+
+      setIsStreaming(true);
       //this is where an instance is created OR an addition to the chatlog of an instance by ID
       if (instanceId) {
         createChat(instanceId, fullResponse);
@@ -148,9 +155,7 @@ export default function CoreRequestChain({ instanceId }: Props) {
         ],
         stream: true,
       });
-
       let fullResponse = "";
-
       for await (const part of stream) {
         fullResponse += part.message.content;
         setChatHistoryClient((prev) =>

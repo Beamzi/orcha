@@ -1,6 +1,5 @@
 "use client";
 
-import { chatInstanceContext } from "@/context/chatInstances";
 import { globalHooksContext, WebSearchResultType } from "@/context/globalHooks";
 import React, { useContext, useEffect, useRef, useState } from "react";
 import TestRenderSearch from "./CoreRequestChain";
@@ -9,10 +8,19 @@ import remarkGfm from "remark-gfm";
 
 import Markdown from "react-markdown";
 import OrcaIcon from "@/svg/OrcaIcon";
-import { sessionOrchaContext } from "@/context/session";
-import { delay, motion } from "motion/react";
+import { delay, motion, useReducedMotion } from "motion/react";
 import { LuRefreshCcw } from "react-icons/lu";
 import CoreRequestChain from "./CoreRequestChain";
+import {
+  useChatHistory,
+  useGlobalHooks,
+  useInstances,
+  useSessionContext,
+} from "@/hooks/context/contextHooks";
+import {
+  getViewportRevealVariants,
+  defaultViewport,
+} from "@/lib/viewport-reveal";
 
 const markdownRenderer = (response: string | null | undefined) => {
   return (
@@ -55,12 +63,11 @@ async function warmUpRequest() {
 }
 
 export default function InstanceView({}) {
-  const context = useContext(chatInstanceContext);
-  if (!context) throw new Error("context not loaded");
-  const { chatInstancesClient, setChatInstancesClient } = context;
-
-  const globalHooks = useContext(globalHooksContext);
-  if (!globalHooks) throw new Error("globalHooks not loaded");
+  const { chatInstancesClient, setChatInstancesClient } = useInstances();
+  const { chatHistoryClient, setChatHistoryClient } = useChatHistory();
+  const prefersReducedMotion = useReducedMotion();
+  const { container: containerVariants, item: itemVariants } =
+    getViewportRevealVariants(prefersReducedMotion);
 
   const {
     instanceId,
@@ -68,17 +75,16 @@ export default function InstanceView({}) {
     isNoChats,
     webSearchResult,
     webModeSwitch,
-  } = globalHooks;
+    isStreaming,
+    setIsStreaming,
+    isNewChatSelected,
+    setIsNewChatSelected,
+    isSearchModeMemory,
+  } = useGlobalHooks();
 
-  const chatHistoryContext = useContext(chatContext);
-  if (!chatHistoryContext) throw new Error("context not loaded");
+  const userSession = useSessionContext();
 
-  const { chatHistoryClient, setChatHistoryClient } = chatHistoryContext;
-
-  const usersession = useContext(sessionOrchaContext);
-  if (!usersession) throw new Error("session invalid");
-
-  const userFirstName = usersession?.name?.split(" ").shift();
+  const userFirstName = userSession?.name?.split(" ").shift();
 
   const selectedInstance = chatInstancesClient.find(
     (instance) => instance.id === instanceId,
@@ -106,9 +112,15 @@ export default function InstanceView({}) {
     (instance) => instance.instanceIdForWeb === instanceId,
   );
 
-  const searchResultMarkup = (obj: WebSearchResultType) => {
+  const searchResultMarkup = (obj: WebSearchResultType, index: number) => {
     return (
-      <div className="flex-col border-b m-7 border-neutral-700" key={obj.title}>
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: index * 0.2 }}
+        className="flex-col border-b m-7 border-neutral-700"
+        key={obj.title}
+      >
         <div className="flex items-start">
           <img
             className="mr-2 rounded-lg border-neutral-700 bg-neutral-300 h-10 border-2 min-w-10"
@@ -117,6 +129,7 @@ export default function InstanceView({}) {
           <div className="-mt-1">
             <h3 className="border-b border-neutral-700 pb-2">{obj.title}</h3>
             <div className="flex items-top ">
+              {/* Brave API returns pre-formatted HTML in description field */}
               <div
                 className="py-2"
                 dangerouslySetInnerHTML={{
@@ -136,13 +149,13 @@ export default function InstanceView({}) {
             </div>
           </div>
         </div>
-      </div>
+      </motion.div>
     );
   };
 
   const chatMarkup = (obj: ChatType) => {
     return (
-      <div key={obj.id}>
+      <div className="" key={obj.id}>
         <div className="border-b my-5 border-neutral-700">
           <p className="my-5 text-lg text-red-400">{obj.prompt}</p>
         </div>
@@ -178,23 +191,27 @@ export default function InstanceView({}) {
 
             <div className="h-full w-full flex">
               <motion.div
-                className={`flex elevated-bg-grad-thin flex-1 border-10 h-full px-7 overflow-y-scroll rounded-xl border border-neutral-700 p-2.5`}
+                className={`flex elevated-bg-grad-thin flex-1 border-10 h-full px-7 overflow-y-scroll rounded-xl  border-neutral-700 p-2.5`}
               >
-                <div className={`h-full w-full `}>
+                <div className={`h-full w-full`}>
                   {instanceId &&
                     selectedInstance?.chatlogs?.map((obj) => chatMarkup(obj))}
                   {instanceId ? (
                     <>
-                      {selectedChat.map((obj, index) => (
-                        <div key={obj.id}>
-                          {chatMarkup(obj)}
-                          <p>aaaaaaaaaa</p>
-                        </div>
-                      ))}
-                      {chatHistoryClient.map(
-                        (obj) =>
-                          obj.instanceId === tempInstanceId && chatMarkup(obj),
-                      )}
+                      <div className="">
+                        {selectedChat.map((obj, index) => (
+                          <div className="" key={obj.id}>
+                            {chatMarkup(obj)}
+                          </div>
+                        ))}
+                        {chatHistoryClient.map(
+                          (obj) =>
+                            obj.instanceId === tempInstanceId &&
+                            chatMarkup(obj),
+                        )}
+                      </div>
+                      <div className="pb-2"></div>
+                      {!isStreaming && <div className="pb-20"></div>}
                     </>
                   ) : (
                     <>
@@ -233,22 +250,25 @@ export default function InstanceView({}) {
                 animate={{
                   width:
                     (webSearchResult.length > 0 && currentSwitch?.isWebInUse) ||
-                    (!currentSwitch && webSearchResult.length > 0)
+                    (!currentSwitch &&
+                      webSearchResult.length > 0 &&
+                      isSearchModeMemory)
                       ? "50%"
                       : "80px",
                 }}
-                className={`flex flex-col overflow-y-scroll border border-neutral-700 bg-neutral-900  w-20 h-full rounded-xl ml-5`}
+                className={`flex flex-col overflow-y-scroll border border-neutral-700 bg-neutral-900  w-20 h-full rounded-xl ml-5 `}
               >
+                {isNewChatSelected}
                 {webSearchResult.length > 0 &&
                   currentSwitch?.isWebInUse &&
-                  webSearchResult.map((obj) => {
-                    return searchResultMarkup(obj);
+                  webSearchResult.map((obj, index) => {
+                    return searchResultMarkup(obj, index);
                   })}
-
                 {!currentSwitch &&
                   webSearchResult.length > 0 &&
-                  webSearchResult.map((obj) => {
-                    return searchResultMarkup(obj);
+                  isSearchModeMemory &&
+                  webSearchResult.map((obj, index) => {
+                    return searchResultMarkup(obj, index);
                   })}
               </motion.div>
             </div>
