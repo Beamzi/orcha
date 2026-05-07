@@ -24,6 +24,8 @@ export default function GlobalHooksProvider({ children }: Props) {
   const [isStreaming, setIsStreaming] = useState(true);
   const [isNewChatSelected, setIsNewChatSelected] = useState(true);
 
+  const [showSignOut, setShowSignOut] = useState(false);
+
   // const [tempId, setTempId] = useState<number>(() =>
   //   Math.floor(Math.random() * 15204),
   // );

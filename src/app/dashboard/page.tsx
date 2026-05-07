@@ -1,11 +1,11 @@
 import Dashboard from "@/components/dashboard/Dashboard";
 import InstanceView from "@/components/InstanceView";
-import React from "react";
+import { auth } from "../../../auth";
+import { SignInClient } from "@/components/SignInClient";
 
-export default function page() {
+export default async function page() {
+  const session = await auth();
   return (
-    <Dashboard>
-      <InstanceView />
-    </Dashboard>
+    <Dashboard>{!session ? <SignInClient /> : <InstanceView />}</Dashboard>
   );
 }

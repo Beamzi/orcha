@@ -112,13 +112,30 @@ export default function InstanceView({}) {
     (instance) => instance.instanceIdForWeb === instanceId,
   );
 
+  const getOverlay = (top: string, bottom: string) => {
+    const shared =
+      "pointer-events-none absolute inset-x-0  h-16  from-neutral-900 to-transparent z-10";
+    return (
+      <>
+        <div
+          className={`${shared} ${top} `}
+          style={{ top: "1px", left: "1px", right: "1px" }}
+        />
+        <div
+          className={`${shared} ${bottom} `}
+          style={{ bottom: "1px", left: "1px", right: "1px" }}
+        />
+      </>
+    );
+  };
+
   const searchResultMarkup = (obj: WebSearchResultType, index: number) => {
     return (
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: index * 0.2 }}
-        className="flex-col border-b m-7 border-neutral-700"
+        className="flex-col border-b m-7 border-neutral-800"
         key={obj.title}
       >
         <div className="flex items-start">
@@ -127,7 +144,7 @@ export default function InstanceView({}) {
             src={obj.profile.img}
           />
           <div className="-mt-1">
-            <h3 className="border-b border-neutral-700 pb-2">{obj.title}</h3>
+            <h3 className="border-b border-neutral-800 pb-2">{obj.title}</h3>
             <div className="flex items-top ">
               {/* Brave API returns pre-formatted HTML in description field */}
               <div
@@ -156,7 +173,7 @@ export default function InstanceView({}) {
   const chatMarkup = (obj: ChatType) => {
     return (
       <div className="" key={obj.id}>
-        <div className="border-b my-5 border-neutral-700">
+        <div className="border-b my-5 border-neutral-800">
           <p className="my-5 text-lg text-red-400">{obj.prompt}</p>
         </div>
         {!obj.response ? (
@@ -179,74 +196,74 @@ export default function InstanceView({}) {
       <main className="flex w-[calc(100vw-260px)] px-5 ">
         <div className="flex items-center w-full flex-col h-screen">
           <div className="relative flex-1 w-full min-h-0 mb-5 mt-5">
-            {/* vignette overlays */}
-            <div
-              className="pointer-events-none absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-neutral-900 to-transparent z-10 rounded-t-xl"
-              style={{ top: "1px", left: "1px", right: "1px" }}
-            />
-            <div
-              className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-neutral-900 to-transparent z-10 rounded-b-xl"
-              style={{ bottom: "1px", left: "1px", right: "1px" }}
-            />
-
             <div className="h-full w-full flex">
-              <motion.div
-                className={`flex elevated-bg-grad-thin flex-1 border-10 h-full px-7 overflow-y-scroll rounded-xl  border-neutral-700 p-2.5`}
-              >
-                <div className={`h-full w-full`}>
-                  {instanceId &&
-                    selectedInstance?.chatlogs?.map((obj) => chatMarkup(obj))}
-                  {instanceId ? (
-                    <>
-                      <div className="">
-                        {selectedChat.map((obj, index) => (
-                          <div className="" key={obj.id}>
-                            {chatMarkup(obj)}
-                          </div>
-                        ))}
-                        {chatHistoryClient.map(
-                          (obj) =>
-                            obj.instanceId === tempInstanceId &&
-                            chatMarkup(obj),
-                        )}
-                      </div>
-                      <div className="pb-2"></div>
-                      {!isStreaming && <div className="pb-20"></div>}
-                    </>
-                  ) : (
-                    <>
-                      <div className="h-full w-full">
-                        {isNoChats ? (
-                          <div className="flex flex-col justify-center items-center w-full h-full">
-                            <motion.p
-                              animate={{ opacity: [0, 1] }}
-                              transition={{ duration: 0.8 }}
-                              className="text-xl pb-2"
-                            >{`Hi ${userFirstName}, shall we get started?`}</motion.p>
-                            <motion.div
-                              animate={{ opacity: [0, 1] }}
-                              transition={{ duration: 0.6, delay: 0.2 }}
-                              className=""
-                            >
-                              <OrcaIcon color="#d4d4d4" className="w-25 h-25" />
-                            </motion.div>
-                          </div>
-                        ) : (
-                          chatHistoryClient.map(
+              <div className="w-full h-full relative flex-1 p-2 elevated-bg-grad-thin border-neutral-700 border rounded-xl">
+                {getOverlay(
+                  "top-0 bg-gradient-to-b rounded-t-xl",
+                  "bottom-0 bg-gradient-to-t rounded-b-xl",
+                )}
+                <motion.div
+                  className={`flex elevated-bg-grad-thin   h-full px-7  overflow-y-scroll  p-2.5`}
+                >
+                  <div className={`h-full w-full `}>
+                    {instanceId &&
+                      selectedInstance?.chatlogs?.map((obj) => chatMarkup(obj))}
+                    {instanceId ? (
+                      <>
+                        <div className="">
+                          {selectedChat.map((obj, index) => (
+                            <div className="" key={obj.id}>
+                              {chatMarkup(obj)}
+                            </div>
+                          ))}
+                          {chatHistoryClient.map(
                             (obj) =>
                               obj.instanceId === tempInstanceId &&
                               chatMarkup(obj),
-                          )
-                        )}
-                      </div>
-                    </>
-                  )}
+                          )}
+                        </div>
+                        <div className="pb-2"></div>
+                        {!isStreaming && <div className="pb-20"></div>}
+                      </>
+                    ) : (
+                      <>
+                        <div className="h-full w-full">
+                          {isNoChats ? (
+                            <div className="flex flex-col justify-center items-center w-full h-full">
+                              <motion.p
+                                animate={{ opacity: [0, 1] }}
+                                transition={{ duration: 0.8 }}
+                                className="text-xl pb-2"
+                              >{`Hi ${userFirstName}, shall we get started?`}</motion.p>
+                              <motion.div
+                                animate={{ opacity: [0, 1] }}
+                                transition={{ duration: 0.6, delay: 0.2 }}
+                                className=""
+                              >
+                                <OrcaIcon
+                                  color="#d4d4d4"
+                                  className="w-25 h-25"
+                                />
+                              </motion.div>
+                            </div>
+                          ) : (
+                            chatHistoryClient.map(
+                              (obj) =>
+                                obj.instanceId === tempInstanceId &&
+                                chatMarkup(obj),
+                            )
+                          )}
+                        </div>
+                      </>
+                    )}
 
-                  <div ref={bottomRef} />
-                </div>
-              </motion.div>
+                    <div ref={bottomRef} />
+                  </div>
+                </motion.div>
+              </div>
 
               <motion.div
+                initial={{ width: "80px" }}
                 animate={{
                   width:
                     (webSearchResult.length > 0 && currentSwitch?.isWebInUse) ||
@@ -256,20 +273,31 @@ export default function InstanceView({}) {
                       ? "50%"
                       : "80px",
                 }}
-                className={`flex flex-col overflow-y-scroll border border-neutral-700 bg-neutral-900  w-20 h-full rounded-xl ml-5 `}
+                className={`flex flex-col elevated-bg-grad-vert overflow-hidden h-full ml-5  relative border border-neutral-700 rounded-xl`}
               >
-                {isNewChatSelected}
-                {webSearchResult.length > 0 &&
-                  currentSwitch?.isWebInUse &&
-                  webSearchResult.map((obj, index) => {
-                    return searchResultMarkup(obj, index);
-                  })}
-                {!currentSwitch &&
-                  webSearchResult.length > 0 &&
-                  isSearchModeMemory &&
-                  webSearchResult.map((obj, index) => {
-                    return searchResultMarkup(obj, index);
-                  })}
+                <div className="p-2 h-full flex flex-col">
+                  {getOverlay(
+                    "top-0 bg-gradient-to-b rounded-t-xl",
+                    "bottom-0 bg-gradient-to-t  rounded-b-xl",
+                  )}
+                  <div
+                    className="w-full h-full 
+                  flex flex-col overflow-y-scroll"
+                  >
+                    {isNewChatSelected}
+                    {webSearchResult.length > 0 &&
+                      currentSwitch?.isWebInUse &&
+                      webSearchResult.map((obj, index) => {
+                        return searchResultMarkup(obj, index);
+                      })}
+                    {!currentSwitch &&
+                      webSearchResult.length > 0 &&
+                      isSearchModeMemory &&
+                      webSearchResult.map((obj, index) => {
+                        return searchResultMarkup(obj, index);
+                      })}
+                  </div>
+                </div>
               </motion.div>
             </div>
           </div>

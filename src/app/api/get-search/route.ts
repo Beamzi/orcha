@@ -17,7 +17,6 @@ export async function POST(request: Request) {
     },
   );
   const searchResponse = await searchRequest.json();
-  // console.log({searchResponse});
 
   return NextResponse.json({ searchResponse });
 }
