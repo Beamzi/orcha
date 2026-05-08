@@ -5,9 +5,8 @@
 Orcha is a full-stack chat application that brings persistent conversations, live web search, and a production-quality UI to locally-run AI models. Inference runs entirely on your machine by default. Your conversations, prompts, and responses stay local unless you choose otherwise. Built around [Ollama](https://ollama.com/) and designed for small models that run on a laptop. The capability is already there, it just needed the right infrastructure around it.
 
 ---
+https://github.com/user-attachments/assets/b285938a-1ac2-41ed-b080-5b01183240e2
 
-
-https://github.com/user-attachments/assets/a63506d1-ac61-4ae5-8a46-8ee421a3d856
 
 
 ## The problem
