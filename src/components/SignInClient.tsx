@@ -21,29 +21,39 @@ export function SignInClient() {
           <OrcaIcon color="#f87171" className="ml-1 w-5 h-5 mr-2" />
           Welcome To Orcha
         </h3>
-        <div className="border border-neutral-500 p-3 min-h-111.5 rounded-lg bg-neutral-900/70 text-neutral-300">
+        <div className="border border-neutral-500 p-3 min-h-111.5 rounded-lg bg-neutral-900/70 text-neutral-300 overflow-y-auto h-100 flex flex-col">
           <p className="mb-2">
-            AI is getting powerful enough to run entirely on your laptop —
-            private, free, and offline. The problem? It's still buried in a
-            command line that most people will never touch. Orcha changes that.
+            AI is getting powerful enough to run entirely on your laptop,
+            private, free, and without sending a single message to the cloud.
+            The problem? Local models are stateless by default. No memory within
+            a conversation. No memory between sessions. No awareness of anything
+            that happened after their training cutoff.
           </p>
           <p className="mb-2">
-            It's a desktop app that wraps locally-run AI models in a clean,
-            full-featured interface — persistent chat history, organised
-            conversations, and live web search built right in. No cloud. No
-            subscription. No data leaving your machine. Built on top of Ollama,
+            Orcha fixes all three. It wraps locally-run AI models in a
+            full-featured interface with persistent chat history, organised
+            conversation instances, and live web search built right in. Your
+            prompts and responses never leave your machine unless you choose
+            otherwise.
+          </p>
+          <p className="mb-2">
+            Built on top of Ollama, Orcha takes the raw capability of small
+            local models and pushes it as far as it can go through
+            infrastructure. Context injection keeps conversations coherent.
+            Persistent instances mean you pick up where you left off. Brave
+            Search pulls in real-time results and feeds them directly into the
+            model before it responds.
           </p>
           <p>
-            Orcha takes the raw power of local AI and makes it genuinely
-            accessible to non-technical users. You get the privacy and cost
-            benefits of running a model locally, without needing to know what a
-            terminal is. We're early stage, but the core is working: chat UI,
-            saved conversation history, and real-time web results injected
-            directly into the model's context before it responds. Local AI, made
+            The result is a local model that knows what happened last week and
+            remembers what you talked about yesterday. Free to run. Private by
+            architecture. No subscription, no cloud dependency, no terminal
+            required. We're early stage but the core is working. Local AI, made
             accessible. That's Orcha.
           </p>
         </div>
       </div>
+
       <section className="relative bg-neutral-900/70 border border-neutral-500 z-100 w-1/2 h-130 rounded-lg m-2.5 flex justify-center items-center">
         <div className=" flex flex-col align-middle justify-center items-center">
           <button

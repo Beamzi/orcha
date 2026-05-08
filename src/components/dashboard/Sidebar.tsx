@@ -1,17 +1,13 @@
 "use client";
 
-import React, { useContext, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   LuChevronsUpDown,
   LuCirclePlus,
   LuEllipsis,
   LuPanelLeftOpen,
-  LuPanelRightOpen,
 } from "react-icons/lu";
 import { motion } from "motion/react";
-import { chatInstanceContext } from "@/context/chatInstances";
-import { globalHooksContext } from "@/context/globalHooks";
-import { chatContext } from "@/context/chat";
 import { User } from "next-auth";
 import OrcaIcon from "@/svg/OrcaIcon";
 import {
@@ -22,7 +18,6 @@ import {
 import { getInitAnimate } from "@/lib/init-animate";
 import { tapVariants } from "@/lib/init-animate";
 import { createPortal } from "react-dom";
-import SignOut from "../SignOut";
 import { signOut } from "next-auth/react";
 
 interface Props {
@@ -36,34 +31,34 @@ export default function Sidebar({ className, sessiondata }: Props) {
   const [activateNameField, setActivateNameField] = useState(false);
   const [newInstanceName, setNewInstanceName] = useState("");
   const [showUserActions, setShowUserActions] = useState(false);
-  // const [showSignOut, setShowSignOut] = useState(false);
-  const [currentElementId, setCurrentElementId] = useState("");
-
-  const staticWidth = 240;
-
   const { chatInstancesClient, setChatInstancesClient } = useInstances();
-  const { chatHistoryClient, setChatHistoryClient } = useChatHistory();
+  const { setChatHistoryClient } = useChatHistory();
   const {
     instanceId,
     setInstanceId,
     setIsNoChats,
     setWebModeSwitch,
-    isNewChatSelected,
     setIsNewChatSelected,
     showSignOut,
     setShowSignOut,
   } = useGlobalHooks();
 
-  const selectedInstance = chatInstancesClient.find(
-    (instance) => instance.id === instanceId,
-  );
   const [clickPos, setClickPos] = useState(0);
-
   const chatInstancesReversed = [...chatInstancesClient].reverse();
-
   const switches = chatInstancesClient
     .map((instance) => [{ instanceIdForWeb: instance.id, isWebInUse: false }])
     .flat();
+
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!newInstanceName) return;
+    const timer = setTimeout(() => {
+      renameChatInstanceAPI();
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [newInstanceName]);
 
   useEffect(() => {
     setWebModeSwitch(switches);
@@ -108,18 +103,6 @@ export default function Sidebar({ className, sessiondata }: Props) {
     }
   }
 
-  useEffect(() => {
-    if (!newInstanceName) return;
-    const timer = setTimeout(() => {
-      renameChatInstanceAPI();
-    }, 300);
-
-    return () => clearTimeout(timer);
-  }, [newInstanceName]);
-
-  const menuRef = useRef<HTMLDivElement>(null);
-  const [menuPos, setMenuPos] = useState({ top: 0, right: 0 });
-
   return (
     <motion.aside
       initial={{ width: 200 }}
@@ -147,7 +130,7 @@ export default function Sidebar({ className, sessiondata }: Props) {
                   setInstanceId(undefined);
                   setIsNoChats(true);
                 }}
-                className={`cursor-pointer group p-2  transition-all duration-200 border border-neutral-700 rounded-xl h-full  w-full flex mr-2 justify-left align-middle items-center`}
+                className={`cursor-pointer group p-2 transition-all duration-200 border border-neutral-700 rounded-xl h-full  w-full flex mr-2 justify-left align-middle items-center`}
               >
                 <div
                   className={`flex transition-all items-center p-2 rounded-lg w-full ${!instanceId ? "bg-red-400 " : "hover:bg-red-900 duration-300"} `}
@@ -174,9 +157,8 @@ export default function Sidebar({ className, sessiondata }: Props) {
                   {chatInstancesReversed.map((item, index) => {
                     return (
                       <div
-                        id={instanceId === item.id ? `current${index}` : ""}
                         ref={menuRef}
-                        className={`flex ${index > 0 ? "mt-2" : ""} mx-2  transition-all duration-200 rounded-md ${instanceId === item.id ? "bg-red-400" : "hover:bg-red-900"} relative justify-between h-full`}
+                        className={`flex ${index > 0 ? "mt-2" : ""} mx-2  transition-all duration-200 text-neutral-350 rounded-md ${instanceId === item.id ? "bg-red-400" : "hover:bg-red-900"} relative justify-between h-full`}
                         key={item.id}
                       >
                         {activateNameField && instanceId === item.id ? (

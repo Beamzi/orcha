@@ -18,8 +18,6 @@ export interface WebModeSwitchType {
 interface Props {
   instanceId: number | undefined;
   setInstanceId: (value: number | undefined) => void;
-  forceInstance: boolean;
-  setForceInstance: (value: boolean) => void;
   tempId: number;
   tempInstanceId: number;
   setTempId: Dispatch<SetStateAction<number>>;
@@ -32,8 +30,6 @@ interface Props {
   setwebSearchResult: Dispatch<SetStateAction<WebSearchResultType[]>>;
   webModeSwitch: WebModeSwitchType[];
   setWebModeSwitch: Dispatch<SetStateAction<WebModeSwitchType[]>>;
-  isStreaming: boolean;
-  setIsStreaming: (value: boolean) => void;
   isNewChatSelected: boolean;
   setIsNewChatSelected: (value: boolean) => void;
   showSignOut: boolean;

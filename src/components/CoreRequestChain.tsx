@@ -1,6 +1,6 @@
 "use client";
-import { useContext, useState } from "react";
-import { chatContext, ChatType } from "@/context/chat";
+import { useState } from "react";
+import { ChatType } from "@/context/chat";
 import PromptBar from "./PromptBar";
 import { ChatInstancesType } from "@/context/chatInstances";
 import ollama from "ollama/browser";
@@ -8,9 +8,7 @@ import {
   useChatHistory,
   useGlobalHooks,
   useInstances,
-  useSessionContext,
 } from "@/hooks/context/contextHooks";
-import { convertServerPatchToFullTree } from "next/dist/client/components/segment-cache/navigation";
 
 interface Props {
   instanceId: number | undefined;
@@ -58,7 +56,6 @@ export default function CoreRequestChain({ instanceId }: Props) {
   const [promptQuery, setPromptQuery] = useState("");
   const { chatHistoryClient, setChatHistoryClient } = useChatHistory();
   const { chatInstancesClient, setChatInstancesClient } = useInstances();
-  const userSession = useSessionContext();
   const {
     tempId,
     tempInstanceId,
@@ -66,8 +63,6 @@ export default function CoreRequestChain({ instanceId }: Props) {
     isSearchModeMemory,
     setWebModeSwitch,
     setInstanceId: setSelectedInstanceId,
-    isStreaming,
-    setIsStreaming,
   } = useGlobalHooks();
 
   async function getWebSearch() {
@@ -106,16 +101,13 @@ export default function CoreRequestChain({ instanceId }: Props) {
             []),
           {
             role: "user",
-            content: `You are a helpful Assistant, Summarise the following search results, ${promptInject}`,
+            content: `You are a helpful assistant. Answer this question: "${promptQuery}". Use the following search results from multiple sources as your reference. Write a direct answer in plain prose, no meta commentary. Search results: ${promptInject}`,
           },
         ],
         stream: true,
       });
       let fullResponse = "";
-
       for await (const part of stream) {
-        setIsStreaming(false);
-
         fullResponse += part.message.content;
         setChatHistoryClient((prev) =>
           prev.map((item) =>
@@ -125,8 +117,6 @@ export default function CoreRequestChain({ instanceId }: Props) {
           ),
         );
       }
-
-      setIsStreaming(true);
       //this is where an instance is created OR an addition to the chatlog of an instance by ID
       if (instanceId) {
         createChat(instanceId, fullResponse);
@@ -157,8 +147,6 @@ export default function CoreRequestChain({ instanceId }: Props) {
       });
       let fullResponse = "";
       for await (const part of stream) {
-        setIsStreaming(false);
-
         fullResponse += part.message.content;
         setChatHistoryClient((prev) =>
           prev.map((item) =>
@@ -168,9 +156,6 @@ export default function CoreRequestChain({ instanceId }: Props) {
           ),
         );
       }
-
-      setIsStreaming(true);
-
       //this is where an instance is created OR an addition to the chatlog of an instance by ID
       if (instanceId) {
         createChat(instanceId, fullResponse);

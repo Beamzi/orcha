@@ -11,7 +11,6 @@ interface Props {
 
 export default function GlobalHooksProvider({ children }: Props) {
   const [instanceId, setInstanceId] = useState<number | undefined>(undefined);
-  const [forceInstance, setForceInstance] = useState(false);
   //these hardcoded ID's are fine as the DB uses index ID's
   const [tempId, setTempId] = useState<number>(7898576);
   const [tempInstanceId, setTempInstanceId] = useState<number>(2534453);
@@ -21,7 +20,6 @@ export default function GlobalHooksProvider({ children }: Props) {
     [],
   );
   const [webModeSwitch, setWebModeSwitch] = useState<WebModeSwitchType[]>([]);
-  const [isStreaming, setIsStreaming] = useState(true);
   const [isNewChatSelected, setIsNewChatSelected] = useState(true);
 
   const [showSignOut, setShowSignOut] = useState(false);
@@ -31,8 +29,6 @@ export default function GlobalHooksProvider({ children }: Props) {
       value={{
         instanceId,
         setInstanceId,
-        forceInstance,
-        setForceInstance,
         tempId,
         tempInstanceId,
         setTempId,
@@ -45,8 +41,6 @@ export default function GlobalHooksProvider({ children }: Props) {
         setwebSearchResult,
         webModeSwitch,
         setWebModeSwitch,
-        isStreaming,
-        setIsStreaming,
         isNewChatSelected,
         setIsNewChatSelected,
         showSignOut,

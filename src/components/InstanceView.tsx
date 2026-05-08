@@ -16,10 +16,6 @@ import {
   useInstances,
   useSessionContext,
 } from "@/hooks/context/contextHooks";
-import {
-  getViewportRevealVariants,
-  defaultViewport,
-} from "@/lib/viewport-reveal";
 
 const markdownRenderer = (response: string | null | undefined) => {
   return (
@@ -62,11 +58,10 @@ async function warmUpRequest() {
 }
 
 export default function InstanceView({}) {
-  const { chatInstancesClient, setChatInstancesClient } = useInstances();
-  const { chatHistoryClient, setChatHistoryClient } = useChatHistory();
-  const prefersReducedMotion = useReducedMotion();
-  const { container: containerVariants, item: itemVariants } =
-    getViewportRevealVariants(prefersReducedMotion);
+  const { chatInstancesClient } = useInstances();
+  const { chatHistoryClient } = useChatHistory();
+  const userSession = useSessionContext();
+  const userFirstName = userSession?.name?.split(" ").shift();
 
   const {
     instanceId,
@@ -74,18 +69,11 @@ export default function InstanceView({}) {
     isNoChats,
     webSearchResult,
     webModeSwitch,
-    isStreaming,
-    setIsStreaming,
     isNewChatSelected,
-    setIsNewChatSelected,
     isSearchModeMemory,
     showSignOut,
     setShowSignOut,
   } = useGlobalHooks();
-
-  const userSession = useSessionContext();
-
-  const userFirstName = userSession?.name?.split(" ").shift();
 
   const selectedInstance = chatInstancesClient.find(
     (instance) => instance.id === instanceId,
@@ -95,12 +83,7 @@ export default function InstanceView({}) {
     (instance) => instance.instanceId === instanceId,
   );
 
-  const streamingChat = chatHistoryClient.filter(
-    (chat) => chat.instanceId === tempInstanceId,
-  );
-
   const bottomRef = useRef<HTMLDivElement>(null);
-
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -115,9 +98,7 @@ export default function InstanceView({}) {
 
   useLayoutEffect(() => {
     const container = scrollContainerRef.current;
-
     if (!container) return;
-
     container.scrollTop = container.scrollHeight;
   }, [instanceId]);
 
@@ -192,10 +173,10 @@ export default function InstanceView({}) {
         {!obj.response ? (
           <motion.div
             className="ml-2 w-5 h-5 "
-            animate={{ rotate: [0, 720] }}
-            transition={{ duration: 2 }}
+            animate={{ rotate: [0, 1440] }}
+            transition={{ duration: 4 }}
           >
-            <LuRefreshCcw className="w-full h-full stroke-neutral-300" />
+            <LuRefreshCcw className="w-full h-full stroke-neutral-400" />
           </motion.div>
         ) : (
           <div className="ml-2 my-5">{markdownRenderer(obj.response)}</div>
@@ -220,7 +201,7 @@ export default function InstanceView({}) {
                 )}
                 <motion.div
                   ref={scrollContainerRef}
-                  className={`flex elevated-bg-grad-thin h-full  px-7 overflow-y-scroll p-2.5`}
+                  className={`flex elevated-bg-grad-thin h-full px-7 overflow-y-scroll p-2.5`}
                 >
                   <div className={`h-full w-full  `}>
                     {instanceId &&
@@ -309,6 +290,7 @@ export default function InstanceView({}) {
                       webSearchResult.map((obj, index) => {
                         return searchResultMarkup(obj, index);
                       })}
+                    {/* some repetition here to keep flag checks sane */}
                     {!currentSwitch &&
                       webSearchResult.length > 0 &&
                       isSearchModeMemory &&
@@ -320,7 +302,6 @@ export default function InstanceView({}) {
               </motion.div>
             </div>
           </div>
-
           <CoreRequestChain instanceId={instanceId} />
         </div>
       </main>
