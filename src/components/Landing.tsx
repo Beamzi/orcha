@@ -1,8 +1,6 @@
 "use client";
 
 import OrcaIcon from "@/svg/OrcaIcon";
-import Markdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 import GettingStarted from "./DevGuide";
 import OrchaReadme from "./Readme";
 

@@ -12,6 +12,7 @@ interface Props {
 export default function GlobalHooksProvider({ children }: Props) {
   const [instanceId, setInstanceId] = useState<number | undefined>(undefined);
   const [forceInstance, setForceInstance] = useState(false);
+  //these hardcoded ID's are fine as the DB uses index ID's
   const [tempId, setTempId] = useState<number>(7898576);
   const [tempInstanceId, setTempInstanceId] = useState<number>(2534453);
   const [isNoChats, setIsNoChats] = useState(true);
@@ -19,19 +20,11 @@ export default function GlobalHooksProvider({ children }: Props) {
   const [webSearchResult, setwebSearchResult] = useState<WebSearchResultType[]>(
     [],
   );
-
   const [webModeSwitch, setWebModeSwitch] = useState<WebModeSwitchType[]>([]);
   const [isStreaming, setIsStreaming] = useState(true);
   const [isNewChatSelected, setIsNewChatSelected] = useState(true);
 
   const [showSignOut, setShowSignOut] = useState(false);
-
-  // const [tempId, setTempId] = useState<number>(() =>
-  //   Math.floor(Math.random() * 15204),
-  // );
-  // const [tempInstanceId, setTempInstanceId] = useState<number>(() =>
-  //   Date.now(),
-  // );
 
   return (
     <globalHooksContext.Provider
@@ -56,6 +49,8 @@ export default function GlobalHooksProvider({ children }: Props) {
         setIsStreaming,
         isNewChatSelected,
         setIsNewChatSelected,
+        showSignOut,
+        setShowSignOut,
       }}
     >
       {children}

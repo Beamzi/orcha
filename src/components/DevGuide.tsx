@@ -1,8 +1,6 @@
 import { useState } from "react";
 import { ReactNode } from "react";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
 interface Prereq {
   label: string;
   link?: string;
@@ -18,8 +16,6 @@ interface Step {
   title: string;
   content: ReactNode;
 }
-
-// ─── Data ─────────────────────────────────────────────────────────────────────
 
 const prereqs: Prereq[] = [
   { label: "Node.js 18+" },
@@ -40,8 +36,6 @@ const envVars: EnvVar[] = [
   { key: "AUTH_GOOGLE_SECRET", value: "your_google_client_secret" },
   { key: "BRAVE_API_KEY", value: "your_brave_search_api_key" },
 ];
-
-// ─── Sub-components ───────────────────────────────────────────────────────────
 
 interface TerminalWindowProps {
   lines: string[];
@@ -139,8 +133,6 @@ function InlineCode({ children }: InlineCodeProps) {
   );
 }
 
-// ─── Steps ────────────────────────────────────────────────────────────────────
-
 const steps: Step[] = [
   {
     title: "Pull the model",
@@ -178,8 +170,6 @@ const steps: Step[] = [
     content: <TerminalWindow lines={["npm run dev"]} />,
   },
 ];
-
-// ─── Main component ───────────────────────────────────────────────────────────
 
 export default function GettingStarted() {
   return (

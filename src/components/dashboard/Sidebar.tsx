@@ -36,7 +36,7 @@ export default function Sidebar({ className, sessiondata }: Props) {
   const [activateNameField, setActivateNameField] = useState(false);
   const [newInstanceName, setNewInstanceName] = useState("");
   const [showUserActions, setShowUserActions] = useState(false);
-  const [showSignOut, setShowSignOut] = useState(false);
+  // const [showSignOut, setShowSignOut] = useState(false);
   const [currentElementId, setCurrentElementId] = useState("");
 
   const staticWidth = 240;
@@ -50,6 +50,8 @@ export default function Sidebar({ className, sessiondata }: Props) {
     setWebModeSwitch,
     isNewChatSelected,
     setIsNewChatSelected,
+    showSignOut,
+    setShowSignOut,
   } = useGlobalHooks();
 
   const selectedInstance = chatInstancesClient.find(
@@ -121,7 +123,7 @@ export default function Sidebar({ className, sessiondata }: Props) {
   return (
     <motion.aside
       initial={{ width: 200 }}
-      className={`${className} elevated-bg-grad-vert border relative flex flex-col justify-between border-neutral-700 rounded-xl mt-5 ml-5 h-[calc(100vh-40px)] min-w-60`}
+      className={`${className} elevated-bg-grad-vert border relative flex flex-col justify-between border-neutral-700 rounded-xl mt-5 ml-5 h-[calc(100vh-40px)] min-w-70`}
       animate={{ width: expandPanel ? 200 : 50 }}
     >
       <section className="">
@@ -134,16 +136,7 @@ export default function Sidebar({ className, sessiondata }: Props) {
                   <b>Orcha</b>
                 </h3>
               </div>
-              <div className="flex">
-                {/* <button
-                  className="cursor-pointer"
-                  onClick={() => {
-                    setExpandPanel(expandPanel ? false : true);
-                  }}
-                >
-                  <LuPanelRightOpen className="w-6 h-6" />
-                </button> */}
-              </div>
+              <div className="flex"></div>
             </header>
             <div className=" my-5 ">
               <motion.button
@@ -173,111 +166,115 @@ export default function Sidebar({ className, sessiondata }: Props) {
                 </div>
               </motion.button>
             </div>
-            <section className=" py-2 border  w-full rounded-xl  h-full  bg-neutral-900 border-neutral-700">
-              <div
-                className={`overflow-y-auto max-h-[calc(100vh-340px)] ${chatInstancesClient.length > 9 && "mr-2"}`}
-              >
-                {chatInstancesReversed.map((item, index) => {
-                  return (
-                    <div
-                      id={instanceId === item.id ? `current${index}` : ""}
-                      ref={menuRef}
-                      className={`flex mb-2 mx-2  transition-all duration-200 rounded-md ${instanceId === item.id ? "bg-red-400" : "hover:bg-red-900"} relative justify-between h-full`}
-                      key={item.id}
-                    >
-                      {activateNameField && instanceId === item.id ? (
-                        <input
-                          onKeyDown={(e) =>
-                            e.key === "Enter" && setActivateNameField(false)
-                          }
-                          autoFocus={true}
-                          placeholder={`${item.title}`}
-                          className={`cursor-pointer rounded-md bg-neutral-900 p-1 mr-1 w-full justify-start text-start transition-all duration-200 ${instanceId === item.id && ""}`}
-                          value={newInstanceName}
-                          onChange={(e) => {
-                            setNewInstanceName(
-                              instanceId === item.id
-                                ? e.target.value
-                                : newInstanceName,
+            {chatInstancesClient.length > 0 && (
+              <section className=" py-2 border  w-full rounded-xl  h-full  bg-neutral-900 border-neutral-700">
+                <div
+                  className={`overflow-y-auto max-h-[calc(100vh-340px)] ${chatInstancesClient.length > 10 && "mr-2"}`}
+                >
+                  {chatInstancesReversed.map((item, index) => {
+                    return (
+                      <div
+                        id={instanceId === item.id ? `current${index}` : ""}
+                        ref={menuRef}
+                        className={`flex ${index > 0 ? "mt-2" : ""} mx-2  transition-all duration-200 rounded-md ${instanceId === item.id ? "bg-red-400" : "hover:bg-red-900"} relative justify-between h-full`}
+                        key={item.id}
+                      >
+                        {activateNameField && instanceId === item.id ? (
+                          <input
+                            onKeyDown={(e) =>
+                              e.key === "Enter" && setActivateNameField(false)
+                            }
+                            autoFocus={true}
+                            placeholder={`${item.title}`}
+                            className={`cursor-pointer rounded-md bg-neutral-900 p-1 mr-1 w-full justify-start text-start transition-all duration-200 ${instanceId === item.id && ""}`}
+                            value={newInstanceName}
+                            onChange={(e) => {
+                              setNewInstanceName(
+                                instanceId === item.id
+                                  ? e.target.value
+                                  : newInstanceName,
+                              );
+                            }}
+                            onClick={() => {
+                              setInstanceId(item.id);
+                            }}
+                          ></input>
+                        ) : (
+                          <button
+                            id={`instance${index}`}
+                            onClick={() => {
+                              setIsNoChats(false);
+                              setActivateNameField(false);
+                              setInstanceId(item.id);
+                            }}
+                            className={`cursor-pointer rounded-md p-1 pl-2 mr-1  truncate w-full justify-start text-start transition-all duration-200 ${instanceId === item.id && "bg-red-400"}`}
+                          >
+                            {item.title}
+                          </button>
+                        )}
+
+                        <button
+                          className={`cursor-pointer rounded-md px-1 transitional-all   duration-200 ${instanceId === item.id && openInstanceMenu && " "} `}
+                          onClick={(e) => {
+                            setIsNoChats(false);
+                            setClickPos(e.clientY);
+                            // deleteInstanceAPI(item.id);
+                            setInstanceId(item.id);
+                            setOpenInstanceMenu(
+                              openInstanceMenu ? false : true,
                             );
                           }}
-                          onClick={() => {
-                            setInstanceId(item.id);
-                          }}
-                        ></input>
-                      ) : (
-                        <button
-                          id={`instance${index}`}
-                          onClick={() => {
-                            setIsNoChats(false);
-                            setActivateNameField(false);
-                            setInstanceId(item.id);
-                          }}
-                          className={`cursor-pointer rounded-md p-1 pl-2 mr-1  truncate w-full justify-start text-start transition-all duration-200 ${instanceId === item.id && "bg-red-400"}`}
                         >
-                          {item.title}
+                          <LuEllipsis
+                            className={`w-5 h-5 hover:scale-120 transitional-all duration-200 `}
+                          />
                         </button>
-                      )}
+                        {instanceId === item.id &&
+                          openInstanceMenu &&
+                          createPortal(
+                            <div
+                              style={{ top: clickPos - 20, left: 248 }}
+                              className={`absolute border  border-neutral-700 w-50 p-2 rounded-xl bg-neutral-900 z-100 -right-2`}
+                            >
+                              <ul>
+                                <li
+                                  onClick={() => {
+                                    setIsNoChats(false);
+                                    setInstanceId(item.id);
+                                    setActivateNameField(true);
+                                    setOpenInstanceMenu(
+                                      openInstanceMenu ? false : true,
+                                    );
+                                  }}
+                                  className="hover:bg-red-400 p-2 rounded-md cursor-pointer transition-all duration-200"
+                                >
+                                  Rename Chat
+                                </li>
 
-                      <button
-                        className={`cursor-pointer rounded-md px-1 transitional-all   duration-200 ${instanceId === item.id && openInstanceMenu && " "} `}
-                        onClick={(e) => {
-                          setIsNoChats(false);
-                          setClickPos(e.clientY);
-                          // deleteInstanceAPI(item.id);
-                          setInstanceId(item.id);
-                          setOpenInstanceMenu(openInstanceMenu ? false : true);
-                        }}
-                      >
-                        <LuEllipsis
-                          className={`w-5 h-5 hover:scale-120 transitional-all duration-200 `}
-                        />
-                      </button>
-                      {instanceId === item.id &&
-                        openInstanceMenu &&
-                        createPortal(
-                          <div
-                            style={{ top: clickPos - 20, left: 248 }}
-                            className={`absolute border  border-neutral-700 w-50 p-2 rounded-xl bg-neutral-900 z-100 -right-2`}
-                          >
-                            <ul>
-                              <li
-                                onClick={() => {
-                                  setIsNoChats(false);
-                                  setInstanceId(item.id);
-                                  setActivateNameField(true);
-                                  setOpenInstanceMenu(
-                                    openInstanceMenu ? false : true,
-                                  );
-                                }}
-                                className="hover:bg-red-400 p-2 rounded-md cursor-pointer transition-all duration-200"
-                              >
-                                Rename Chat
-                              </li>
-
-                              <li
-                                onClick={() => {
-                                  setIsNewChatSelected(false);
-                                  setInstanceId(undefined);
-                                  setOpenInstanceMenu(
-                                    openInstanceMenu ? false : true,
-                                  );
-                                  deleteInstanceAPI(item.id);
-                                  setIsNoChats(true);
-                                }}
-                                className="hover:bg-red-400 p-2 transition-all duration-200 rounded-md cursor-pointer"
-                              >
-                                Delete Chat
-                              </li>
-                            </ul>
-                          </div>,
-                          document.body,
-                        )}
-                    </div>
-                  );
-                })}
-              </div>
-            </section>
+                                <li
+                                  onClick={() => {
+                                    setIsNewChatSelected(false);
+                                    setInstanceId(undefined);
+                                    setOpenInstanceMenu(
+                                      openInstanceMenu ? false : true,
+                                    );
+                                    deleteInstanceAPI(item.id);
+                                    setIsNoChats(true);
+                                  }}
+                                  className="hover:bg-red-400 p-2 transition-all duration-200 rounded-md cursor-pointer"
+                                >
+                                  Delete Chat
+                                </li>
+                              </ul>
+                            </div>,
+                            document.body,
+                          )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </section>
+            )}
           </div>
         ) : (
           <motion.div className="w-full h-full flex  ">
@@ -296,14 +293,14 @@ export default function Sidebar({ className, sessiondata }: Props) {
         )}
       </section>
       <section
-        className={`border absolute bottom-0 w-[calc(240px-42px)] border-neutral-700 my-5 ml-5 rounded-xl bg-neutral-900`}
+        className={`border absolute bottom-0 w-[calc(280px-43px)] border-neutral-700 my-5 ml-5 rounded-xl bg-neutral-900`}
       >
         <div className="p-3 flex justify-between">
           <img
             className="rounded-b-full rounded-t-full w-10 h-10 "
             src={sessiondata?.image ? sessiondata?.image : ""}
           ></img>
-          <div className="-ml-5 flex flex-col justify-center">
+          <div className="-ml-13 flex flex-col justify-center">
             <p className="text-sm">{sessiondata?.name}</p>
             <p className="text-neutral-500 text-sm">Free Plan</p>
           </div>

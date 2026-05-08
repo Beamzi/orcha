@@ -1,14 +1,13 @@
 "use client";
 
-import { globalHooksContext, WebSearchResultType } from "@/context/globalHooks";
-import React, { useContext, useEffect, useRef, useState } from "react";
-import TestRenderSearch from "./CoreRequestChain";
-import { chatContext, ChatType } from "@/context/chat";
+import { WebSearchResultType } from "@/context/globalHooks";
+import { useEffect, useLayoutEffect, useRef } from "react";
+import { ChatType } from "@/context/chat";
 import remarkGfm from "remark-gfm";
 
 import Markdown from "react-markdown";
 import OrcaIcon from "@/svg/OrcaIcon";
-import { delay, motion, useReducedMotion } from "motion/react";
+import { motion, useReducedMotion } from "motion/react";
 import { LuRefreshCcw } from "react-icons/lu";
 import CoreRequestChain from "./CoreRequestChain";
 import {
@@ -80,6 +79,8 @@ export default function InstanceView({}) {
     isNewChatSelected,
     setIsNewChatSelected,
     isSearchModeMemory,
+    showSignOut,
+    setShowSignOut,
   } = useGlobalHooks();
 
   const userSession = useSessionContext();
@@ -100,13 +101,25 @@ export default function InstanceView({}) {
 
   const bottomRef = useRef<HTMLDivElement>(null);
 
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [chatHistoryClient, selectedInstance?.chatlogs]);
+    const container = scrollContainerRef.current;
+    if (!container) return;
+    container.scrollTop = container.scrollHeight;
+  }, [chatHistoryClient]);
 
   useEffect(() => {
     warmUpRequest();
   }, []);
+
+  useLayoutEffect(() => {
+    const container = scrollContainerRef.current;
+
+    if (!container) return;
+
+    container.scrollTop = container.scrollHeight;
+  }, [instanceId]);
 
   const currentSwitch = webModeSwitch.find(
     (instance) => instance.instanceIdForWeb === instanceId,
@@ -157,7 +170,7 @@ export default function InstanceView({}) {
                 <div className="flex-col mt-3 ml-5">
                   <img
                     style={{ objectFit: "cover" }}
-                    className="min-h-20 min-w-30  rounded-lg border border-neutral-700 "
+                    className="min-h-20 min-w-30 rounded-lg border border-neutral-700 "
                     src={obj.thumbnail?.src}
                   ></img>
                   <p className="pt-1 text-right">{obj.profile.name}</p>
@@ -193,7 +206,10 @@ export default function InstanceView({}) {
 
   return (
     <>
-      <main className="flex w-[calc(100vw-260px)] px-5 ">
+      <main
+        onClick={() => showSignOut && setShowSignOut(false)}
+        className="flex w-[calc(100vw-300px)] px-5 "
+      >
         <div className="flex items-center w-full flex-col h-screen">
           <div className="relative flex-1 w-full min-h-0 mb-5 mt-5">
             <div className="h-full w-full flex">
@@ -203,9 +219,10 @@ export default function InstanceView({}) {
                   "bottom-0 bg-gradient-to-t rounded-b-xl",
                 )}
                 <motion.div
-                  className={`flex elevated-bg-grad-thin   h-full px-7  overflow-y-scroll  p-2.5`}
+                  ref={scrollContainerRef}
+                  className={`flex elevated-bg-grad-thin h-full  px-7 overflow-y-scroll p-2.5`}
                 >
-                  <div className={`h-full w-full `}>
+                  <div className={`h-full w-full  `}>
                     {instanceId &&
                       selectedInstance?.chatlogs?.map((obj) => chatMarkup(obj))}
                     {instanceId ? (
@@ -223,7 +240,6 @@ export default function InstanceView({}) {
                           )}
                         </div>
                         <div className="pb-2"></div>
-                        {!isStreaming && <div className="pb-20"></div>}
                       </>
                     ) : (
                       <>
@@ -241,17 +257,20 @@ export default function InstanceView({}) {
                                 className=""
                               >
                                 <OrcaIcon
-                                  color="#d4d4d4"
+                                  color="#ff6467"
                                   className="w-25 h-25"
                                 />
                               </motion.div>
                             </div>
                           ) : (
-                            chatHistoryClient.map(
-                              (obj) =>
-                                obj.instanceId === tempInstanceId &&
-                                chatMarkup(obj),
-                            )
+                            <>
+                              {chatHistoryClient.map(
+                                (obj) =>
+                                  obj.instanceId === tempInstanceId &&
+                                  chatMarkup(obj),
+                              )}
+                              <div className="pb-2"></div>
+                            </>
                           )}
                         </div>
                       </>
@@ -273,7 +292,7 @@ export default function InstanceView({}) {
                       ? "50%"
                       : "80px",
                 }}
-                className={`flex flex-col elevated-bg-grad-vert overflow-hidden h-full ml-5  relative border border-neutral-700 rounded-xl`}
+                className={`flex flex-col elevated-bg-grad-vert  overflow-hidden h-full ml-5  relative border border-neutral-700 rounded-xl`}
               >
                 <div className="p-2 h-full flex flex-col">
                   {getOverlay(

@@ -36,6 +36,8 @@ interface Props {
   setIsStreaming: (value: boolean) => void;
   isNewChatSelected: boolean;
   setIsNewChatSelected: (value: boolean) => void;
+  showSignOut: boolean;
+  setShowSignOut: (value: boolean) => void;
 }
 
 export const globalHooksContext = createContext<Props | undefined>(undefined);

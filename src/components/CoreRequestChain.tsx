@@ -157,6 +157,8 @@ export default function CoreRequestChain({ instanceId }: Props) {
       });
       let fullResponse = "";
       for await (const part of stream) {
+        setIsStreaming(false);
+
         fullResponse += part.message.content;
         setChatHistoryClient((prev) =>
           prev.map((item) =>
@@ -166,6 +168,9 @@ export default function CoreRequestChain({ instanceId }: Props) {
           ),
         );
       }
+
+      setIsStreaming(true);
+
       //this is where an instance is created OR an addition to the chatlog of an instance by ID
       if (instanceId) {
         createChat(instanceId, fullResponse);

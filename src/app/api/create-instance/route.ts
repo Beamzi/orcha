@@ -1,7 +1,3 @@
-// Scalar fields (string, number, etc.) → assign directly
-// Relations in write operations → use create, connect, etc.
-// Relations in read operations → use include or select
-
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { auth } from "../../../../auth";

@@ -3,9 +3,17 @@ import InstanceView from "@/components/InstanceView";
 import { auth } from "../../../auth";
 import { SignInClient } from "@/components/SignInClient";
 
-export default async function page() {
+export default async function DashboardPage() {
   const session = await auth();
   return (
-    <Dashboard>{!session ? <SignInClient /> : <InstanceView />}</Dashboard>
+    <>
+      {!session ? (
+        <SignInClient />
+      ) : (
+        <Dashboard>
+          <InstanceView />
+        </Dashboard>
+      )}
+    </>
   );
 }
