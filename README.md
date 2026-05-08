@@ -6,6 +6,10 @@ Orcha is a full-stack chat application that brings persistent conversations, liv
 
 ---
 
+
+https://github.com/user-attachments/assets/a63506d1-ac61-4ae5-8a46-8ee421a3d856
+
+
 ## The problem
 
 Small local models are private, free, and increasingly capable. But they ship with fundamental limitations:
