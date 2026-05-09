@@ -7,7 +7,8 @@ Orcha is a full-stack chat application that brings persistent conversations, liv
 ---
 
 https://github.com/user-attachments/assets/bf526a1c-0616-4748-b65c-71b2a90e0a05
-_First message creates a persistent chat instance. Web search mode pulls live results via Brave API, local response summary streaming in real time._
+
+_*First message creates a persistent chat instance. Web search mode pulls live results via Brave API, local response summary streaming in real time.*_
 
 ## The problem
 
